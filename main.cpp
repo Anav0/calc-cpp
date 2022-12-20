@@ -1,64 +1,98 @@
 #include <stdio.h>
+#include <stdbool.h>
+
 #include <SDL.h>
 #include <SDL_image.h>
-#include <SDL_timer.h>
 
-SDL_Window* gWindow;
-SDL_Surface* gScreenSurface;
-SDL_Surface* gHelloWorld;
-bool gShouldQuit = false;
+// Define MAX and MIN macros
+#define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
+#define MIN(X, Y) (((X) < (Y)) ? (X) : (Y))
 
-void cleanup()
+// Define screen dimensions
+#define SCREEN_WIDTH    1024
+#define SCREEN_HEIGHT   720
+
+// Define Tunisia flag image path
+#define TN_FLAG_IMAGE_PATH "assets/image.png"
+
+int init(SDL_Window** window, SDL_Renderer** renderer)
 {
-	SDL_FreeSurface(gHelloWorld);
-	gHelloWorld = NULL;
-
-	SDL_DestroyWindow(gWindow);
-	gWindow = NULL;
-
-	SDL_Quit();
-}
-
-void printKey(SDL_Event e) {
-	printf("%s\n", SDL_GetKeyName(e.key.keysym.sym));
-}
-
-void handleEvents()
-{
-	SDL_Event e;
-
-	while (SDL_PollEvent(&e) != 0)
+	if (SDL_Init(SDL_INIT_VIDEO) < 0)
 	{
-		switch (e.type) 
-		{
-			case SDL_QUIT:
-				gShouldQuit = true;
-				break;
-			case SDL_KEYDOWN:
-				printKey(e);
-				break;
-		}
+		printf("SDL2 could not be initialized!\n" "SDL2 Error: %s\n", SDL_GetError());
+		return 0;
+	}
+
+	int flags = IMG_INIT_PNG;
+	if ((IMG_Init(flags) & flags) != flags) {
+		printf("SDL2_image could not be initialized with PNG support!\n"
+			"SDL2_image Error: %s\n", IMG_GetError());
+		return 0;
+	}
+
+	*window = SDL_CreateWindow("Sokoban", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+	if (!window)
+	{
+		printf("Window could not be created!\n" "SDL_Error: %s\n", SDL_GetError());
+		return 0;
+	}
+	*renderer = SDL_CreateRenderer(*window, -1, SDL_RENDERER_ACCELERATED);
+	if (!renderer)
+	{
+		printf("Renderer could not be created!\n"
+			"SDL_Error: %s\n", SDL_GetError());
+
+		return 0;
 	}
 }
 
 int main(int argc, char* argv[])
 {
-	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
-		printf("error initializing SDL: %s\n", SDL_GetError());
+	SDL_Renderer* renderer = 0;
+	SDL_Window* window = 0;
+
+	if (!init(&window, &renderer)) {
+		return 0;
 	}
 
-	gWindow = SDL_CreateWindow("Sokoban", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1024, 720, 0);
-
-	if (gWindow == NULL)
-		printf("Failed to create a window: %s\n", SDL_GetError());
-
-	gScreenSurface = SDL_GetWindowSurface(gWindow);
-
-	while (!gShouldQuit)
+	SDL_Texture* imageTexture = IMG_LoadTexture(renderer, TN_FLAG_IMAGE_PATH);
+	if (!imageTexture)
 	{
-		handleEvents();
+		printf("Unable to load image '%s'!\n"
+			"SDL_image Error: %s", TN_FLAG_IMAGE_PATH, IMG_GetError());
+		return false;
 	}
 
-	cleanup();
+	int w, h;
+	SDL_QueryTexture(imageTexture, NULL, NULL, &w, &h);
+
+	SDL_Rect imageReact{};
+	imageReact.w = w;
+	imageReact.h = h;
+	imageReact.x = SCREEN_WIDTH / 2 - imageReact.w / 2;
+	imageReact.y = SCREEN_HEIGHT / 2 - imageReact.h / 2;
+
+	bool shouldQuit = false;
+
+	while (!shouldQuit)
+	{
+		SDL_Event e;
+
+		SDL_WaitEvent(&e);
+
+		if (e.type == SDL_QUIT)
+			shouldQuit = true;
+
+		SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
+		SDL_RenderClear(renderer);
+		SDL_RenderCopy(renderer, imageTexture, NULL, &imageReact);
+		SDL_RenderPresent(renderer);
+	}
+
+	SDL_DestroyRenderer(renderer);
+	SDL_DestroyWindow(window);
+	IMG_Quit();
+	SDL_Quit();
+
 	return 0;
 }
