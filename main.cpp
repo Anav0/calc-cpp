@@ -62,30 +62,7 @@ SDL_Texture* loadTexture(SDL_Renderer* renderer, const char* path, int* w, int* 
 	return imageTexture;
 }
 
-void handleWindowEvent(SDL_Event* e) {
-	switch (e->window.event) {
-	case SDL_WINDOWEVENT_RESIZED:
-		SDL_Log("Window %d resized to %dx%d", e->window.windowID, e->window.data1, e->window.data2);
-		SCREEN_WIDTH = e->window.data1;
-		SCREEN_HEIGHT= e->window.data2;
-	}
-}
-
-void handleEvents() {
-	SDL_Event e;
-
-	SDL_WaitEvent(&e);
-
-	switch (e.type) {
-	case SDL_QUIT:
-		SHOULD_QUIT = true;
-		break;
-	case SDL_WINDOWEVENT:
-		handleWindowEvent(&e);
-	}
-}
-
-void update() {
+void update_cells() {
 	int y = 0, x = 0;
 	bool screenIsNotFilled = true;
 	CELLS.clear();
@@ -115,10 +92,55 @@ void update() {
 	}
 }
 
+void handleMouseButtonDown(SDL_Event* e) {
+
+	switch (e->button.button) {
+		case SDL_BUTTON_LEFT:
+			printf("Left btn down!\n");
+			break;
+
+		case SDL_BUTTON_RIGHT:
+			printf("Right btn down!\n");
+			break;
+
+		case SDL_BUTTON_MIDDLE:
+			printf("Middle btn down!\n");
+			break;
+	}
+
+}
+
+void handleWindowEvent(SDL_Event* e) {
+	switch (e->window.event) {
+		case SDL_WINDOWEVENT_RESIZED:
+			SDL_Log("Window %d resized to %dx%d", e->window.windowID, e->window.data1, e->window.data2);
+			SCREEN_WIDTH = e->window.data1;
+			SCREEN_HEIGHT= e->window.data2;
+			update_cells();
+	}
+}
+
+void handleEvents() {
+	SDL_Event e;
+
+	SDL_WaitEvent(&e);
+
+	switch (e.type) {
+		case SDL_QUIT:
+			SHOULD_QUIT = true;
+			break;
+		case SDL_MOUSEBUTTONDOWN:
+			handleMouseButtonDown(&e);
+		case SDL_WINDOWEVENT:
+			handleWindowEvent(&e);
+	}
+}
+
 int main(int argc, char* argv[])
 {
 	SDL_Renderer* renderer = 0;
 	SDL_Window*   window   = 0;
+	SDL_Point     mouse_position;
 
 	if (!init(&window, &renderer)) {
 		return 0;
@@ -128,18 +150,25 @@ int main(int argc, char* argv[])
 	int y = 0, x = 0;
 	bool screenIsNotFilled = true;
 
+	update_cells();
+
 	while (!SHOULD_QUIT)
 	{
-		handleEvents();
+ 		SDL_GetMouseState(&mouse_position.x, &mouse_position.y);
 
-		update();
+		handleEvents();
 
 		SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
 		SDL_RenderClear(renderer);
-		SDL_SetRenderDrawColor(renderer, 192, 192, 192, 0xFF);
 
 		for (Cell cell : CELLS)
 		{
+			if (SDL_PointInRect(&mouse_position, &cell.rect)) {
+				SDL_SetRenderDrawColor(renderer, 38, 87, 82, 0xFF);
+			} else {
+				SDL_SetRenderDrawColor(renderer, 192, 192, 192, 0xFF);
+			}
+
 			SDL_RenderDrawRect(renderer, &cell.rect);
 		}
 		SDL_RenderPresent(renderer);
