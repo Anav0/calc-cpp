@@ -13,9 +13,8 @@
 #define TN_FLAG_IMAGE_PATH "assets/image.png"
 
 struct Cell {
-	SDL_Texture* texture;
+	//SDL_Texture* texture;
 	SDL_Rect rect;
-	int w, h, x, y;
 };
 
 int init(SDL_Window** window, SDL_Renderer** renderer)
@@ -72,29 +71,27 @@ int main(int argc, char* argv[])
 		return 0;
 	}
 
-	int w, h;
-	SDL_Texture* imageTexture = loadTexture(renderer, "./assets/image.png", &w, &h);
-
-	if (imageTexture == NULL) {
-		printf("Failed to load texture");
-		return 0;
-	}
-
-	Cell cells[10];
-	for (size_t i = 0; i < 10; i++)
+	const int n = 200;
+	Cell cells[n];
+	int y = 0, x = 0;
+	for (size_t i = 0; i < n; i++)
 	{
 		SDL_Rect cellRect{};
-		cellRect.w = w;
-		cellRect.h = h;
-		cellRect.x = i*w;
-		cellRect.y = 10;
+		cellRect.w = 100;
+		cellRect.h = 20;
+		cellRect.x = x;
+
+		if (cellRect.x > SCREEN_WIDTH) {
+			y += cellRect.h;
+			x = 0;
+		}
+		else {
+			x += cellRect.w;
+		}
+		cellRect.y = y;
 
 		Cell cell{};
-		cell.texture = imageTexture;
-		cell.h = h;
-		cell.w = w;
 		cell.rect = cellRect;
-
 		cells[i] = cell;
 	}
 
@@ -109,9 +106,11 @@ int main(int argc, char* argv[])
 
 		SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
 		SDL_RenderClear(renderer);
+		SDL_SetRenderDrawColor(renderer, 245, 141, 86, 0xFF); //orange
+		
 		for (Cell cell : cells)
 		{
-			SDL_RenderCopy(renderer, cell.texture, NULL, &cell.rect);
+			SDL_RenderDrawRect(renderer, &cell.rect);
 		}
 		SDL_RenderPresent(renderer);
 	}
