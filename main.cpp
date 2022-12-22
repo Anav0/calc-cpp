@@ -4,6 +4,8 @@
 
 #include <SDL.h>
 #include <SDL_image.h>
+#include <SDL_ttf.h>
+#include <string>
 
 const int ROW_W = 40;
 const int ROW_H = 20;
@@ -18,6 +20,8 @@ static bool SHOULD_QUIT = false;
 
 SDL_Point   MOUSE_POS;
 
+TTF_Font*   FONT;
+
 struct Cell {
 	SDL_Rect rect;
 	SDL_bool isSelected = SDL_FALSE;
@@ -26,6 +30,9 @@ struct Cell {
 struct Column {
 	SDL_Rect rect;
 	SDL_bool isSelected = SDL_FALSE;
+	
+	SDL_Rect textRect;
+	SDL_Texture* textTexture;
 };
 
 struct Row {
@@ -68,6 +75,17 @@ bool init(SDL_Window** window, SDL_Renderer** renderer)
 		return false;
 	}
 
+	if ( TTF_Init() < 0 ) {
+		printf("Error initializing SDL_ttf: %s", TTF_GetError());
+	}
+
+	const char * font_path = "./assets/fonts/Lato-Regular.ttf";
+	FONT = TTF_OpenFont(font_path , 14);
+
+	if (!FONT) {
+		printf("Failed to load font: '%s' with msg: '%s'", font_path, TTF_GetError());
+	}
+
 	return true;
 }
 
@@ -106,11 +124,14 @@ void update_rows() {
 	}
 }
 
-void update_columns() {
+void update_columns(SDL_Renderer* renderer) {
 	int x = ROW_W;
 	bool exceededScreenWidth = false;
-	COLUMNS.clear();
+	SDL_Color fontColor { 0, 0, 0 };
+	SDL_Color bgColor { 255, 255, 255, 255 };
 
+	COLUMNS.clear();
+	int i = 0;
 	while (!exceededScreenWidth) {
 		Column col{};
 
@@ -121,10 +142,16 @@ void update_columns() {
 		rect.y = 0;
 		col.rect = rect;
 
+		std::string s(1, char(65 + i));
+		SDL_Surface* text = TTF_RenderText_Shaded(FONT, s.c_str(), fontColor, bgColor);
+		col.textRect = { col.rect.x + COL_W / 2, col.rect.y, text->w, text->h };
+		col.textTexture = SDL_CreateTextureFromSurface(renderer, text);
+
 		x += COL_W;
 		exceededScreenWidth = (rect.x + COL_W) > SCREEN_WIDTH;
 
 		COLUMNS.push_back(col);
+		i++;
 	}
 
 }
@@ -159,10 +186,10 @@ void update_cells() {
 	}
 }
 
-void update() {
+void update(SDL_Renderer* renderer) {
 	update_cells();
 	update_rows();
-	update_cells();
+	update_columns(renderer);
 }
 
 void handleMouseMotion(SDL_Event* e) {
@@ -187,17 +214,17 @@ void handleMouseButtonDown(SDL_Event* e) {
 
 }
 
-void handleWindowEvent(SDL_Event* e) {
+void handleWindowEvent(SDL_Renderer* renderer, SDL_Event* e) {
 	switch (e->window.event) {
 	case SDL_WINDOWEVENT_RESIZED:
 		SDL_Log("Window %d resized to %dx%d", e->window.windowID, e->window.data1, e->window.data2);
 		SCREEN_WIDTH = e->window.data1;
 		SCREEN_HEIGHT = e->window.data2;
-		update();
+		update(renderer);
 	}
 }
 
-void handleEvents() {
+void handleEvents(SDL_Renderer* renderer) {
 	SDL_Event e;
 
 	SDL_WaitEvent(&e);
@@ -214,7 +241,7 @@ void handleEvents() {
 		handleMouseButtonDown(&e);
 
 	case SDL_WINDOWEVENT:
-		handleWindowEvent(&e);
+		handleWindowEvent(renderer, &e);
 	}
 }
 
@@ -227,11 +254,11 @@ int main(int argc, char* argv[])
 		return 0;
 	}
 
-	update();
+	update(renderer);
 
 	while (!SHOULD_QUIT)
 	{
-		handleEvents();
+		handleEvents(renderer);
 
 		SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
 		SDL_RenderClear(renderer);
@@ -257,6 +284,8 @@ int main(int argc, char* argv[])
 			SDL_RenderFillRect(renderer, &column.rect);
 			SDL_SetRenderDrawColor(renderer, 67, 66, 61, 0xFF);
 			SDL_RenderDrawRect(renderer, &column.rect);
+
+			SDL_RenderCopy(renderer, column.textTexture, NULL, &column.textRect);
 		}
 
 		for (const Row& row : ROWS)
