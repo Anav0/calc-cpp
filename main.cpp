@@ -1,3 +1,5 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <stdio.h>
 #include <stdbool.h>
 #include <vector>
@@ -18,19 +20,25 @@ static int SCREEN_HEIGHT = 768;
 
 static bool SHOULD_QUIT = false;
 
+#define MAX_TEXT_LEN 256
+
 SDL_Point   MOUSE_POS;
 
-TTF_Font*   FONT;
+TTF_Font* FONT;
 
 struct Cell {
 	SDL_Rect rect;
 	SDL_bool isSelected = SDL_FALSE;
+
+	SDL_Rect contentRect;
+	SDL_Texture* contentTexture;
+	char content[MAX_TEXT_LEN];
 };
 
 struct Column {
 	SDL_Rect rect;
 	SDL_bool isSelected = SDL_FALSE;
-	
+
 	SDL_Rect textRect;
 	SDL_Texture* textTexture;
 };
@@ -43,9 +51,34 @@ struct Row {
 	SDL_Texture* textTexture;
 };
 
+enum Mode {
+	View,
+	Edit,
+};
+
 static std::vector<Cell> CELLS;
 static std::vector<Column> COLUMNS;
 static std::vector<Row> ROWS;
+static SDL_Color FONT_COLOR = { 0, 0, 0, 0 };
+
+//char usersInput[MAX_TEXT_LEN];
+Sint32 cursor;
+Sint32 inputLength;
+
+Cell* selectedCell;
+
+void updateCellContentTexture(SDL_Renderer* renderer, Cell* cell) {
+
+	SDL_Surface* text = TTF_RenderText_Blended(FONT, cell->content, FONT_COLOR);
+
+	if (text == NULL) {
+		selectedCell->contentTexture = NULL;
+		return;
+	}
+
+	selectedCell->contentRect = { selectedCell->rect.x + ((selectedCell->rect.w - text->w) / 2), selectedCell->rect.y + ((selectedCell->rect.h - text->h) / 2), text->w, text->h };
+	selectedCell->contentTexture = SDL_CreateTextureFromSurface(renderer, text);
+}
 
 bool init(SDL_Window** window, SDL_Renderer** renderer)
 {
@@ -78,12 +111,12 @@ bool init(SDL_Window** window, SDL_Renderer** renderer)
 		return false;
 	}
 
-	if ( TTF_Init() < 0 ) {
+	if (TTF_Init() < 0) {
 		printf("Error initializing SDL_ttf: %s", TTF_GetError());
 	}
 
-	const char * font_path = "./assets/fonts/Lato-Regular.ttf";
-	FONT = TTF_OpenFont(font_path , 14);
+	const char* font_path = "./assets/fonts/Lato-Regular.ttf";
+	FONT = TTF_OpenFont(font_path, 14);
 
 	if (!FONT) {
 		printf("Failed to load font: '%s' with msg: '%s'", font_path, TTF_GetError());
@@ -105,13 +138,58 @@ SDL_Texture* loadTexture(SDL_Renderer* renderer, const char* path, int* w, int* 
 	return imageTexture;
 }
 
+void render(SDL_Renderer* renderer) {
+	SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
+	SDL_RenderClear(renderer);
+
+	for (const Cell& cell : CELLS)
+	{
+		SDL_SetRenderDrawColor(renderer, 192, 192, 192, 0xFF);
+
+		if (SDL_PointInRect(&MOUSE_POS, &cell.rect)) {
+			SDL_SetRenderDrawColor(renderer, 38, 87, 82, 0xFF);
+		}
+
+		if (cell.isSelected) {
+			SDL_SetRenderDrawColor(renderer, 203, 38, 6, 0xFF);
+		}
+
+		SDL_RenderDrawRect(renderer, &cell.rect);
+
+		if (cell.contentTexture != NULL)
+			SDL_RenderCopy(renderer, cell.contentTexture, NULL, &cell.contentRect);
+	}
+
+	for (const Column& column : COLUMNS)
+	{
+		SDL_SetRenderDrawColor(renderer, 248, 249, 250, 0xFF);
+		SDL_RenderFillRect(renderer, &column.rect);
+		SDL_SetRenderDrawColor(renderer, 67, 66, 61, 0xFF);
+		SDL_RenderDrawRect(renderer, &column.rect);
+
+		SDL_RenderCopy(renderer, column.textTexture, NULL, &column.textRect);
+	}
+
+	for (const Row& row : ROWS)
+	{
+		SDL_SetRenderDrawColor(renderer, 248, 249, 250, 0xFF);
+		SDL_RenderFillRect(renderer, &row.rect);
+		SDL_SetRenderDrawColor(renderer, 67, 66, 61, 0xFF);
+		SDL_RenderDrawRect(renderer, &row.rect);
+
+		SDL_RenderCopy(renderer, row.textTexture, NULL, &row.textRect);
+	}
+
+	SDL_RenderPresent(renderer);
+}
+
 void update_rows(SDL_Renderer* renderer) {
 	int y = COL_H;
 	bool exceededScreenHeight = false;
-	SDL_Color fontColor { 0, 0, 0 };
 
 	ROWS.clear();
 	int i = 1;
+
 	while (!exceededScreenHeight) {
 		Row row{};
 
@@ -123,8 +201,8 @@ void update_rows(SDL_Renderer* renderer) {
 		row.rect = rect;
 
 		std::string s = std::to_string(i);
-		SDL_Surface* text = TTF_RenderText_Blended(FONT, s.c_str(), fontColor);
-		
+		SDL_Surface* text = TTF_RenderText_Blended(FONT, s.c_str(), FONT_COLOR);
+
 		row.textRect = { rect.x + ((row.rect.w - text->w) / 2), rect.y + ((row.rect.h - text->h) / 2), text->w, text->h };
 		row.textTexture = SDL_CreateTextureFromSurface(renderer, text);
 
@@ -139,7 +217,6 @@ void update_rows(SDL_Renderer* renderer) {
 void update_columns(SDL_Renderer* renderer) {
 	int x = ROW_W;
 	bool exceededScreenWidth = false;
-	SDL_Color fontColor { 0, 0, 0 };
 
 	COLUMNS.clear();
 	int i = 0;
@@ -154,8 +231,8 @@ void update_columns(SDL_Renderer* renderer) {
 		col.rect = rect;
 
 		std::string s(1, char(65 + i));
-		SDL_Surface* text = TTF_RenderText_Blended(FONT, s.c_str(), fontColor);
-		
+		SDL_Surface* text = TTF_RenderText_Blended(FONT, s.c_str(), FONT_COLOR);
+
 		col.textRect = { rect.x + ((col.rect.w - text->w) / 2), rect.y + ((col.rect.h - text->h) / 2), text->w, text->h };
 		col.textTexture = SDL_CreateTextureFromSurface(renderer, text);
 
@@ -204,16 +281,36 @@ void update(SDL_Renderer* renderer) {
 	update_columns(renderer);
 }
 
+void handleKeydown(SDL_Renderer* renderer, SDL_Event* e) {
+	switch (e->key.keysym.sym) {
+	case SDLK_BACKSPACE:
+		if (selectedCell == NULL || selectedCell->content == "") return;
+
+		selectedCell->content[strlen(selectedCell->content) - 1] = '\0';
+		updateCellContentTexture(renderer, selectedCell);
+	}
+}
+
 void handleMouseMotion(SDL_Event* e) {
 	MOUSE_POS.x = e->motion.x;
 	MOUSE_POS.y = e->motion.y;
 }
 
-void handleMouseButtonDown(SDL_Event* e) {
+void handleMouseButtonDown(SDL_Renderer* renderer, SDL_Event* e) {
 	switch (e->button.button) {
 	case SDL_BUTTON_LEFT:
+		printf("Cell changed!\n");
+
+		SDL_StopTextInput();
+
 		for (Cell& cell : CELLS) {
 			cell.isSelected = SDL_PointInRect(&MOUSE_POS, &cell.rect);
+
+			if (cell.isSelected) {
+				selectedCell = &cell;
+				SDL_StartTextInput();
+				SDL_SetTextInputRect(&cell.rect);
+			}
 		}
 		break;
 
@@ -246,16 +343,37 @@ void handleEvents(SDL_Renderer* renderer) {
 		SHOULD_QUIT = true;
 		break;
 
+	case SDL_KEYDOWN:
+		handleKeydown(renderer, &e);
+		break;
+
+	case SDL_TEXTINPUT:
+		if (selectedCell != NULL) {
+			if (SDL_strlen(selectedCell->content) + SDL_strlen(e.text.text) < MAX_TEXT_LEN) {
+				SDL_strlcat(selectedCell->content, e.text.text, sizeof(selectedCell->content));
+
+				updateCellContentTexture(renderer, selectedCell);
+			}
+			else {
+				printf("Input is too big!\n");
+			}
+		}
+		break;
+
 	case SDL_MOUSEMOTION:
 		handleMouseMotion(&e);
+		break;
 
 	case SDL_MOUSEBUTTONDOWN:
-		handleMouseButtonDown(&e);
+		handleMouseButtonDown(renderer, &e);
+		break;
 
 	case SDL_WINDOWEVENT:
 		handleWindowEvent(renderer, &e);
+		break;
 	}
 }
+
 
 int main(int argc, char* argv[])
 {
@@ -266,51 +384,15 @@ int main(int argc, char* argv[])
 		return 0;
 	}
 
+	SDL_StartTextInput();
+
 	update(renderer);
 
 	while (!SHOULD_QUIT)
 	{
 		handleEvents(renderer);
 
-		SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
-		SDL_RenderClear(renderer);
-
-		for (const Cell& cell : CELLS)
-		{
-			SDL_SetRenderDrawColor(renderer, 192, 192, 192, 0xFF);
-
-			if (SDL_PointInRect(&MOUSE_POS, &cell.rect)) {
-				SDL_SetRenderDrawColor(renderer, 38, 87, 82, 0xFF);
-			} 
-
-			if (cell.isSelected) {
-				SDL_SetRenderDrawColor(renderer, 203, 38, 6, 0xFF);
-			}
-
-			SDL_RenderDrawRect(renderer, &cell.rect);
-		}
-
-		for (const Column& column : COLUMNS)
-		{
-			SDL_SetRenderDrawColor(renderer, 248, 249, 250, 0xFF);
-			SDL_RenderFillRect(renderer, &column.rect);
-			SDL_SetRenderDrawColor(renderer, 67, 66, 61, 0xFF);
-			SDL_RenderDrawRect(renderer, &column.rect);
-
-			SDL_RenderCopy(renderer, column.textTexture, NULL, &column.textRect);
-		}
-
-		for (const Row& row : ROWS)
-		{
-			SDL_SetRenderDrawColor(renderer, 248, 249, 250, 0xFF);
-			SDL_RenderFillRect(renderer, &row.rect);
-			SDL_SetRenderDrawColor(renderer, 67, 66, 61, 0xFF);
-			SDL_RenderDrawRect(renderer, &row.rect);
-
-			SDL_RenderCopy(renderer, row.textTexture, NULL, &row.textRect);
-		}
-
-		SDL_RenderPresent(renderer);
+		render(renderer);
 	}
 
 	SDL_DestroyRenderer(renderer);
