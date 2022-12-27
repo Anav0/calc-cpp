@@ -30,7 +30,7 @@ bool init(SDL_Window** window, SDL_Renderer** renderer)
 	}
 
 	Uint32 windowFlags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE;
-	*window = SDL_CreateWindow("Sokoban", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, STATE.SCREEN_WIDTH, STATE.SCREEN_HEIGHT, windowFlags);
+	*window = SDL_CreateWindow("Sokoban", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, STATE.screenWidth, STATE.screenHeight, windowFlags);
 	if (!window)
 	{
 		printf("Window could not be created!\n" "SDL_Error: %s\n", SDL_GetError());
@@ -76,16 +76,16 @@ void render(SDL_Renderer* renderer) {
 	SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
 	SDL_RenderClear(renderer);
 
-	for (const Cell& cell : STATE.CELLS)
+	for (const Cell& cell : STATE.cells)
 	{
 		SDL_SetRenderDrawColor(renderer, 192, 192, 192, 0xFF);
 
-		if (SDL_PointInRect(&STATE.MOUSE_POS, &cell.rect)) {
+		if (SDL_PointInRect(&STATE.mousePos, &cell.rect)) {
 			SDL_SetRenderDrawColor(renderer, 38, 87, 82, 0xFF);
 		}
 
-		if (STATE.SELECTED_CELL == &cell) {
-			if (STATE.CURRENT_MODE == Edit)
+		if (STATE.selectedCell == &cell) {
+			if (STATE.currentMode == Edit)
 				SDL_SetRenderDrawColor(renderer, 255, 188, 71, 0xFF);
 			else
 				SDL_SetRenderDrawColor(renderer, 38, 87, 82, 0xFF);
@@ -97,7 +97,7 @@ void render(SDL_Renderer* renderer) {
 			SDL_RenderCopy(renderer, cell.contentTexture, NULL, &cell.contentRect);
 	}
 
-	for (const Column& column : STATE.COLUMNS)
+	for (const Column& column : STATE.columns)
 	{
 		SDL_SetRenderDrawColor(renderer, 248, 249, 250, 0xFF);
 		SDL_RenderFillRect(renderer, &column.rect);
@@ -107,7 +107,7 @@ void render(SDL_Renderer* renderer) {
 		SDL_RenderCopy(renderer, column.textTexture, NULL, &column.textRect);
 	}
 
-	for (const Row& row : STATE.ROWS)
+	for (const Row& row : STATE.rows)
 	{
 		SDL_SetRenderDrawColor(renderer, 248, 249, 250, 0xFF);
 		SDL_RenderFillRect(renderer, &row.rect);
@@ -121,71 +121,71 @@ void render(SDL_Renderer* renderer) {
 }
 
 void update_rows(SDL_Renderer* renderer) {
-	int y = STATE.COL_H;
+	int y = STATE.colHeight;
 	bool exceededScreenHeight = false;
 
-	STATE.ROWS.clear();
+	STATE.rows.clear();
 	int i = 1;
 
 	while (!exceededScreenHeight) {
 		Row row{};
 
 		SDL_Rect rect{};
-		rect.w = STATE.ROW_W;
-		rect.h = STATE.ROW_H;
+		rect.w = STATE.rowWidth;
+		rect.h = STATE.rowHeight;
 		rect.x = 0;
 		rect.y = y;
 		row.rect = rect;
 
 		std::string s = std::to_string(i);
-		SDL_Surface* text = TTF_RenderText_Blended(STATE.FONT, s.c_str(), STATE.FONT_COLOR);
+		SDL_Surface* text = TTF_RenderText_Blended(STATE.FONT, s.c_str(), STATE.fontColor);
 
 		row.textRect = { rect.x + ((row.rect.w - text->w) / 2), rect.y + ((row.rect.h - text->h) / 2), text->w, text->h };
 		row.textTexture = SDL_CreateTextureFromSurface(renderer, text);
 
-		y += STATE.ROW_H;
-		exceededScreenHeight = (rect.y + STATE.ROW_H) > STATE.SCREEN_HEIGHT;
+		y += STATE.rowHeight;
+		exceededScreenHeight = (rect.y + STATE.rowHeight) > STATE.screenHeight;
 
-		STATE.ROWS.push_back(row);
+		STATE.rows.push_back(row);
 		i++;
 	}
 }
 
 void update_columns(SDL_Renderer* renderer) {
-	int x = STATE.ROW_W;
+	int x = STATE.rowWidth;
 	bool exceededScreenWidth = false;
 
-	STATE.COLUMNS.clear();
+	STATE.columns.clear();
 	int i = 0;
 	while (!exceededScreenWidth) {
 		Column col{};
 
 		SDL_Rect rect{};
-		rect.w = STATE.COL_W;
-		rect.h = STATE.COL_H;
+		rect.w = STATE.colWidth;
+		rect.h = STATE.colHeight;
 		rect.x = x;
 		rect.y = 0;
 		col.rect = rect;
 
 		std::string s(1, char(65 + i));
-		SDL_Surface* text = TTF_RenderText_Blended(STATE.FONT, s.c_str(), STATE.FONT_COLOR);
+		SDL_Surface* text = TTF_RenderText_Blended(STATE.FONT, s.c_str(), STATE.fontColor);
 
 		col.textRect = { rect.x + ((col.rect.w - text->w) / 2), rect.y + ((col.rect.h - text->h) / 2), text->w, text->h };
 		col.textTexture = SDL_CreateTextureFromSurface(renderer, text);
 
-		x += STATE.COL_W;
-		exceededScreenWidth = (rect.x + STATE.COL_W) > STATE.SCREEN_WIDTH;
+		x += STATE.colWidth;
+		exceededScreenWidth = (rect.x + STATE.colWidth) > STATE.screenWidth;
 
-		STATE.COLUMNS.push_back(col);
+		STATE.columns.push_back(col);
 		i++;
 	}
 
 }
 
 void update_cells() {
-	int y = STATE.COL_H, x = STATE.ROW_W;
+	int y = STATE.colHeight, x = STATE.rowWidth;
 	bool screenIsNotFilled = true;
-	STATE.CELLS.clear();
+	STATE.cells.clear();
 
 	while (screenIsNotFilled)
 	{
@@ -194,9 +194,9 @@ void update_cells() {
 		cellRect.h = 20;
 		cellRect.x = x;
 
-		if (cellRect.x > STATE.SCREEN_WIDTH) {
+		if (cellRect.x > STATE.screenWidth) {
 			y += cellRect.h;
-			x = STATE.ROW_W;
+			x = STATE.rowWidth;
 		}
 		else {
 			x += cellRect.w;
@@ -206,9 +206,9 @@ void update_cells() {
 		Cell cell{};
 		cell.rect = cellRect;
 
-		STATE.CELLS.push_back(cell);
+		STATE.cells.push_back(cell);
 
-		screenIsNotFilled = y < STATE.SCREEN_HEIGHT;
+		screenIsNotFilled = y < STATE.screenHeight;
 	}
 }
 
@@ -223,8 +223,8 @@ void handleEvents(SDL_Renderer* renderer) {
 
 	SDL_WaitEvent(&e);
 
-	Mode* current_mode = STATE.getCurrentMode();
-	current_mode->handleEvents(renderer, &e, &STATE);
+	Mode* currentMode = STATE.getCurrentMode();
+	currentMode->handleEvents(renderer, &e, &STATE);
 }
 
 
@@ -241,9 +241,9 @@ int main(int argc, char* argv[])
 
 	update(renderer);
 
-	STATE.SELECTED_CELL = &STATE.CELLS[0];
+	STATE.selectedCell = &STATE.cells[0];
 
-	while (!STATE.SHOULD_QUIT)
+	while (!STATE.shouldQuit)
 	{
 		handleEvents(renderer);
 

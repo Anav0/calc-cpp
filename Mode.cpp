@@ -6,7 +6,7 @@ void Mode::handleEvents(SDL_Renderer* renderer, SDL_Event* e, ProgramState* stat
 {
 	switch (e->type) {
 		case SDL_QUIT:
-			state->SHOULD_QUIT = true;
+			state->shouldQuit = true;
 			break;
 
 		case SDL_KEYDOWN:
@@ -32,16 +32,16 @@ void Mode::handleEvents(SDL_Renderer* renderer, SDL_Event* e, ProgramState* stat
 }
 
 void Mode::handleMouseMotion(SDL_Renderer* renderer, SDL_Event* e, ProgramState* state) {
-	state->MOUSE_POS.x = e->motion.x;
-	state->MOUSE_POS.y = e->motion.y;
+	state->mousePos.x = e->motion.x;
+	state->mousePos.y = e->motion.y;
 }
 
 void Mode::handleWindowEvent(SDL_Renderer* renderer, SDL_Event* e, ProgramState* state) {
 	switch (e->window.event) {
 		case SDL_WINDOWEVENT_RESIZED:
 			SDL_Log("Window %d resized to %dx%d", e->window.windowID, e->window.data1, e->window.data2);
-			state->SCREEN_WIDTH = e->window.data1;
-			state->SCREEN_HEIGHT = e->window.data2;
+			state->screenWidth = e->window.data1;
+			state->screenHeight = e->window.data2;
 
 			state->shouldUpdate = true;
 	}
@@ -55,14 +55,14 @@ void EditMode::handleKeydownEvent(SDL_Renderer* renderer, SDL_Event* e, ProgramS
 {
 	switch (e->key.keysym.scancode) {
 		case SDL_SCANCODE_ESCAPE:
-			state->CURRENT_MODE = View;
+			state->currentMode = View;
 			break;
 		case SDL_SCANCODE_RETURN:
-			state->CURRENT_MODE = View;
+			state->currentMode = View;
 			break;
 		case SDLK_BACKSPACE:
-			state->SELECTED_CELL->content[strlen(state->SELECTED_CELL->content) - 1] = '\0';
-			updateCellContentTexture(renderer, state->FONT, state->FONT_COLOR, state->SELECTED_CELL);
+			state->selectedCell->content[strlen(state->selectedCell->content) - 1] = '\0';
+			updateCellContentTexture(renderer, state->FONT, state->fontColor, state->selectedCell);
 			break;
 		case SDL_SCANCODE_DOWN:
 			break;
@@ -76,15 +76,15 @@ void EditMode::handleKeydownEvent(SDL_Renderer* renderer, SDL_Event* e, ProgramS
 }
 
 void EditMode::handleMouseButtonDown(SDL_Renderer* renderer, SDL_Event* e, ProgramState* state){
-	state->CURRENT_MODE = View;
+	state->currentMode = View;
 }
 
 void EditMode::handleTextInput(SDL_Renderer* renderer, SDL_Event* e, ProgramState* state){
-	if (state->SELECTED_CELL != NULL) {
-		if (SDL_strlen(state->SELECTED_CELL->content) + SDL_strlen(e->text.text) < MAX_TEXT_LEN) {
-			SDL_strlcat(state->SELECTED_CELL->content, e->text.text, sizeof(state->SELECTED_CELL->content));
+	if (state->selectedCell != NULL) {
+		if (SDL_strlen(state->selectedCell->content) + SDL_strlen(e->text.text) < MAX_TEXT_LEN) {
+			SDL_strlcat(state->selectedCell->content, e->text.text, sizeof(state->selectedCell->content));
 
-			updateCellContentTexture(renderer, state->FONT, state->FONT_COLOR, state->SELECTED_CELL);
+			updateCellContentTexture(renderer, state->FONT, state->fontColor, state->selectedCell);
 		}
 		else {
 			printf("Input is too big!\n");
@@ -100,7 +100,7 @@ void ViewMode::handleKeydownEvent(SDL_Renderer* renderer, SDL_Event* e, ProgramS
 {
 	switch (e->key.keysym.scancode) {
 	case SDL_SCANCODE_RETURN:
-		state->CURRENT_MODE = Edit;
+		state->currentMode = Edit;
 		break;
 	case SDL_SCANCODE_DOWN:
 		ViewMode::navigate(renderer, Direction::Down, state);
@@ -123,9 +123,9 @@ void ViewMode::handleMouseButtonDown(SDL_Renderer* renderer, SDL_Event* e, Progr
 		case SDL_BUTTON_LEFT:
 			SDL_StopTextInput();
 
-			for (Cell& cell : state->CELLS) {
-				if (SDL_PointInRect(&state->MOUSE_POS, &cell.rect)) {
-					state->SELECTED_CELL = &cell;
+			for (Cell& cell : state->cells) {
+				if (SDL_PointInRect(&state->mousePos, &cell.rect)) {
+					state->selectedCell = &cell;
 					SDL_StartTextInput();
 					SDL_SetTextInputRect(&cell.rect);
 				}
@@ -146,12 +146,12 @@ void ViewMode::handleMouseButtonDown(SDL_Renderer* renderer, SDL_Event* e, Progr
 void ViewMode::handleTextInput(SDL_Renderer* renderer, SDL_Event* e, ProgramState* state){}
 
 Cell* ViewMode::getCellToThe(Cell* cell, Direction direction, ProgramState* state) {
-	int numberOfColumns = state->COLUMNS.size();
-	int numberOfRows = state->ROWS.size();
+	int numberOfColumns = state->columns.size();
+	int numberOfRows = state->rows.size();
 
 	int index;
-	for (index = 0; index < state->CELLS.size(); index++) {
-		if (cell == &state->CELLS[index]) {
+	for (index = 0; index < state->cells.size(); index++) {
+		if (cell == &state->cells[index]) {
 			break;
 		}
 	}
@@ -173,21 +173,21 @@ Cell* ViewMode::getCellToThe(Cell* cell, Direction direction, ProgramState* stat
 		break;
 	}
 
-	if (newIndex < 0 || newIndex > state->CELLS.size()) return NULL;
+	if (newIndex < 0 || newIndex > state->cells.size()) return NULL;
 
-	return &state->CELLS[newIndex];
+	return &state->cells[newIndex];
 }
 
 void ViewMode::navigate(SDL_Renderer* renderer, Direction direction, ProgramState* state) {
-	switch (state->CURRENT_MODE) {
+	switch (state->currentMode) {
 	case View:
 	{
-		if (state->SELECTED_CELL == NULL) return;
+		if (state->selectedCell == NULL) return;
 
-		Cell* newCell = getCellToThe(state->SELECTED_CELL, direction, state);
+		Cell* newCell = getCellToThe(state->selectedCell, direction, state);
 
 		if (newCell != NULL) {
-			state->SELECTED_CELL = newCell;
+			state->selectedCell = newCell;
 		}
 		break;
 	}
