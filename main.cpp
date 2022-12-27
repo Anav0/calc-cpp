@@ -14,19 +14,6 @@
 
 static ProgramState STATE{};
 
-void updateCellContentTexture(SDL_Renderer* renderer, Cell* cell) {
-
-	SDL_Surface* text = TTF_RenderText_Blended(STATE.FONT, cell->content, STATE.FONT_COLOR);
-
-	if (text == NULL) {
-		STATE.SELECTED_CELL->contentTexture = NULL;
-		return;
-	}
-
-	STATE.SELECTED_CELL->contentRect = { STATE.SELECTED_CELL->rect.x + ((STATE.SELECTED_CELL->rect.w - text->w) / 2), STATE.SELECTED_CELL->rect.y + ((STATE.SELECTED_CELL->rect.h - text->h) / 2), text->w, text->h };
-	STATE.SELECTED_CELL->contentTexture = SDL_CreateTextureFromSurface(renderer, text);
-}
-
 bool init(SDL_Window** window, SDL_Renderer** renderer)
 {
 	if (SDL_Init(SDL_INIT_VIDEO) < 0)
@@ -98,7 +85,7 @@ void render(SDL_Renderer* renderer) {
 		}
 
 		if (STATE.SELECTED_CELL == &cell) {
-			if(STATE.CURRENT_MODE == Edit)
+			if (STATE.CURRENT_MODE == Edit)
 				SDL_SetRenderDrawColor(renderer, 255, 188, 71, 0xFF);
 			else
 				SDL_SetRenderDrawColor(renderer, 38, 87, 82, 0xFF);
@@ -231,169 +218,13 @@ void update(SDL_Renderer* renderer) {
 	update_columns(renderer);
 }
 
-Cell* getCellToThe(Cell* cell, Direction direction) {
-	int numberOfColumns = STATE.COLUMNS.size();
-	int numberOfRows = STATE.ROWS.size();
-
-	int index;
-	for (index = 0; index < STATE.CELLS.size(); index++) {
-		if (cell == &STATE.CELLS[index]) {
-			break;
-		}
-	}
-
-	int newIndex = 0;
-	switch (direction)
-	{
-	case Left:
-		newIndex = index - 1;
-		break;
-	case Right:
-		newIndex = index + 1;
-		break;
-	case Up:
-		newIndex = index - numberOfColumns - 1;
-		break;
-	case Down:
-		newIndex = index + numberOfColumns + 1;
-		break;
-	}
-
-	if (newIndex < 0 || newIndex > STATE.CELLS.size()) return NULL;
-
-	return &STATE.CELLS[newIndex];
-}
-
-void navigate(SDL_Renderer* renderer, Direction direction) {
-	switch (STATE.CURRENT_MODE) {
-		case View:
-		{
-			if (STATE.SELECTED_CELL == NULL) return;
-
-			Cell* newCell = getCellToThe(STATE.SELECTED_CELL, direction);
-
-			if (newCell != NULL) {
-				STATE.SELECTED_CELL = newCell;
-			}
-			break;
-		}
-	case Edit:
-		//Move caret
-		break;
-	}
-}
-
-void handleKeydown(SDL_Renderer* renderer, SDL_Event* e) {
-	switch (e->key.keysym.scancode) {
-	case SDL_SCANCODE_ESCAPE:
-		printf("View!\n");
-		STATE.CURRENT_MODE = View;
-		break;
-	case SDL_SCANCODE_RETURN:
-		printf("Edit!\n");
-		STATE.CURRENT_MODE = Edit;
-		break;
-	case SDLK_BACKSPACE:
-		if (STATE.SELECTED_CELL == NULL || STATE.SELECTED_CELL->content == "") return;
-		STATE.SELECTED_CELL->content[strlen(STATE.SELECTED_CELL->content) - 1] = '\0';
-		updateCellContentTexture(renderer, STATE.SELECTED_CELL);
-		break;
-	case SDL_SCANCODE_DOWN:
-		if(STATE.CURRENT_MODE == View)
-			navigate(renderer, Direction::Down);
-		break;
-	case SDL_SCANCODE_UP:
-		if(STATE.CURRENT_MODE == View) 
-			navigate(renderer, Direction::Up);
-		break;
-	case SDL_SCANCODE_LEFT:
-		if(STATE.CURRENT_MODE == View) 
-			navigate(renderer, Direction::Left);
-		break;
-	case SDL_SCANCODE_RIGHT:
-		if(STATE.CURRENT_MODE == View)
-			navigate(renderer, Direction::Right);
-		break;
-	}
-}
-
-void handleMouseMotion(SDL_Event* e) {
-	STATE.MOUSE_POS.x = e->motion.x;
-	STATE.MOUSE_POS.y = e->motion.y;
-}
-
-void handleMouseButtonDown(SDL_Renderer* renderer, SDL_Event* e) {
-	switch (e->button.button) {
-	case SDL_BUTTON_LEFT:
-		SDL_StopTextInput();
-
-		for (Cell& cell : STATE.CELLS) {
-			if (SDL_PointInRect(&STATE.MOUSE_POS, &cell.rect)) {
-				STATE.SELECTED_CELL = &cell;
-				SDL_StartTextInput();
-				SDL_SetTextInputRect(&cell.rect);
-			}
-		}
-		break;
-
-	case SDL_BUTTON_RIGHT:
-		break;
-
-	case SDL_BUTTON_MIDDLE:
-		break;
-	}
-
-}
-
-void handleWindowEvent(SDL_Renderer* renderer, SDL_Event* e) {
-	switch (e->window.event) {
-	case SDL_WINDOWEVENT_RESIZED:
-		SDL_Log("Window %d resized to %dx%d", e->window.windowID, e->window.data1, e->window.data2);
-		STATE.SCREEN_WIDTH = e->window.data1;
-		STATE.SCREEN_HEIGHT = e->window.data2;
-		update(renderer);
-	}
-}
-
 void handleEvents(SDL_Renderer* renderer) {
 	SDL_Event e;
 
 	SDL_WaitEvent(&e);
 
-	switch (e.type) {
-	case SDL_QUIT:
-		STATE.SHOULD_QUIT = true;
-		break;
-
-	case SDL_KEYDOWN:
-		handleKeydown(renderer, &e);
-		break;
-
-	case SDL_TEXTINPUT:
-		if (STATE.SELECTED_CELL != NULL) {
-			if (SDL_strlen(STATE.SELECTED_CELL->content) + SDL_strlen(e.text.text) < MAX_TEXT_LEN) {
-				SDL_strlcat(STATE.SELECTED_CELL->content, e.text.text, sizeof(STATE.SELECTED_CELL->content));
-
-				updateCellContentTexture(renderer, STATE.SELECTED_CELL);
-			}
-			else {
-				printf("Input is too big!\n");
-			}
-		}
-		break;
-
-	case SDL_MOUSEMOTION:
-		handleMouseMotion(&e);
-		break;
-
-	case SDL_MOUSEBUTTONDOWN:
-		handleMouseButtonDown(renderer, &e);
-		break;
-
-	case SDL_WINDOWEVENT:
-		handleWindowEvent(renderer, &e);
-		break;
-	}
+	Mode* current_mode = STATE.getCurrentMode();
+	current_mode->handleEvents(renderer, &e, &STATE);
 }
 
 
