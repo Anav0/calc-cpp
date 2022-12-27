@@ -9,6 +9,18 @@
 #include <SDL_ttf.h>
 #include <string>
 
+enum Direction {
+	Left,
+	Right,
+	Up,
+	Down
+};
+
+enum Mode {
+	View,
+	Edit,
+};
+
 const int ROW_W = 40;
 const int ROW_H = 20;
 
@@ -20,11 +32,13 @@ static int SCREEN_HEIGHT = 768;
 
 static bool SHOULD_QUIT = false;
 
+static Mode CURRENT_MODE = Mode::View;
+
+static SDL_Point MOUSE_POS;
+
+static TTF_Font* FONT;
+
 #define MAX_TEXT_LEN 256
-
-SDL_Point   MOUSE_POS;
-
-TTF_Font* FONT;
 
 struct Cell {
 	SDL_Rect rect;
@@ -51,10 +65,6 @@ struct Row {
 	SDL_Texture* textTexture;
 };
 
-enum Mode {
-	View,
-	Edit,
-};
 
 static std::vector<Cell> CELLS;
 static std::vector<Column> COLUMNS;
@@ -65,19 +75,19 @@ static SDL_Color FONT_COLOR = { 0, 0, 0, 0 };
 Sint32 cursor;
 Sint32 inputLength;
 
-Cell* selectedCell;
+Cell* SELECTED_CELL;
 
 void updateCellContentTexture(SDL_Renderer* renderer, Cell* cell) {
 
 	SDL_Surface* text = TTF_RenderText_Blended(FONT, cell->content, FONT_COLOR);
 
 	if (text == NULL) {
-		selectedCell->contentTexture = NULL;
+		SELECTED_CELL->contentTexture = NULL;
 		return;
 	}
 
-	selectedCell->contentRect = { selectedCell->rect.x + ((selectedCell->rect.w - text->w) / 2), selectedCell->rect.y + ((selectedCell->rect.h - text->h) / 2), text->w, text->h };
-	selectedCell->contentTexture = SDL_CreateTextureFromSurface(renderer, text);
+	SELECTED_CELL->contentRect = { SELECTED_CELL->rect.x + ((SELECTED_CELL->rect.w - text->w) / 2), SELECTED_CELL->rect.y + ((SELECTED_CELL->rect.h - text->h) / 2), text->w, text->h };
+	SELECTED_CELL->contentTexture = SDL_CreateTextureFromSurface(renderer, text);
 }
 
 bool init(SDL_Window** window, SDL_Renderer** renderer)
@@ -281,13 +291,79 @@ void update(SDL_Renderer* renderer) {
 	update_columns(renderer);
 }
 
-void handleKeydown(SDL_Renderer* renderer, SDL_Event* e) {
-	switch (e->key.keysym.sym) {
-	case SDLK_BACKSPACE:
-		if (selectedCell == NULL || selectedCell->content == "") return;
+Cell* getCellToThe(Cell* cell, Direction direction) {
+	int numberOfColumns = COLUMNS.size();
+	int numberOfRows = ROWS.size();
 
-		selectedCell->content[strlen(selectedCell->content) - 1] = '\0';
-		updateCellContentTexture(renderer, selectedCell);
+	int index;
+	for (index = 0; index < CELLS.size(); index++) {
+		if (cell == &CELLS[index]) {
+			break;
+		}
+	}
+
+	int newIndex = 0;
+	switch (direction)
+	{
+	case Left:
+		newIndex = index - 1;
+		break;
+	case Right:
+		newIndex = index + 1;
+		break;
+	case Up:
+		newIndex = index - numberOfColumns - 1;
+		break;
+	case Down:
+		newIndex = index + numberOfColumns + 1;
+		break;
+	}
+
+	if (newIndex < 0 || newIndex > CELLS.size()) return NULL;
+
+	return &CELLS[newIndex];
+}
+
+void navigate(SDL_Renderer* renderer, Direction direction) {
+	switch (CURRENT_MODE) {
+		case Mode::View:
+		{
+			if (SELECTED_CELL == NULL) return;
+
+			Cell* newCell = getCellToThe(SELECTED_CELL, direction);
+
+			if (newCell != NULL) {
+				SELECTED_CELL->isSelected = SDL_FALSE; //Note(Igor): Remove this field from Cell;
+				SELECTED_CELL = newCell;
+				SELECTED_CELL->isSelected = SDL_TRUE;
+			}
+			break;
+		}
+	case Mode::Edit:
+		//Move caret
+		break;
+	}
+}
+
+void handleKeydown(SDL_Renderer* renderer, SDL_Event* e) {
+	switch (e->key.keysym.scancode) {
+	case SDLK_BACKSPACE:
+		if (SELECTED_CELL == NULL || SELECTED_CELL->content == "") return;
+		SELECTED_CELL->content[strlen(SELECTED_CELL->content) - 1] = '\0';
+		updateCellContentTexture(renderer, SELECTED_CELL);
+		break;
+	case SDL_SCANCODE_DOWN:
+		navigate(renderer, Direction::Down);
+		break;
+	case SDL_SCANCODE_UP:
+		navigate(renderer, Direction::Up);
+		break;
+	case SDL_SCANCODE_LEFT:
+		navigate(renderer, Direction::Left);
+		break;
+	case SDL_SCANCODE_RIGHT:
+		navigate(renderer, Direction::Right);
+		break;
 	}
 }
 
@@ -299,15 +375,13 @@ void handleMouseMotion(SDL_Event* e) {
 void handleMouseButtonDown(SDL_Renderer* renderer, SDL_Event* e) {
 	switch (e->button.button) {
 	case SDL_BUTTON_LEFT:
-		printf("Cell changed!\n");
-
 		SDL_StopTextInput();
 
 		for (Cell& cell : CELLS) {
 			cell.isSelected = SDL_PointInRect(&MOUSE_POS, &cell.rect);
 
 			if (cell.isSelected) {
-				selectedCell = &cell;
+				SELECTED_CELL = &cell;
 				SDL_StartTextInput();
 				SDL_SetTextInputRect(&cell.rect);
 			}
@@ -348,11 +422,11 @@ void handleEvents(SDL_Renderer* renderer) {
 		break;
 
 	case SDL_TEXTINPUT:
-		if (selectedCell != NULL) {
-			if (SDL_strlen(selectedCell->content) + SDL_strlen(e.text.text) < MAX_TEXT_LEN) {
-				SDL_strlcat(selectedCell->content, e.text.text, sizeof(selectedCell->content));
+		if (SELECTED_CELL != NULL) {
+			if (SDL_strlen(SELECTED_CELL->content) + SDL_strlen(e.text.text) < MAX_TEXT_LEN) {
+				SDL_strlcat(SELECTED_CELL->content, e.text.text, sizeof(SELECTED_CELL->content));
 
-				updateCellContentTexture(renderer, selectedCell);
+				updateCellContentTexture(renderer, SELECTED_CELL);
 			}
 			else {
 				printf("Input is too big!\n");
