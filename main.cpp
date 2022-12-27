@@ -247,6 +247,11 @@ int main(int argc, char* argv[])
 	{
 		handleEvents(renderer);
 
+		if (STATE.shouldUpdate) {
+			update(renderer);
+			STATE.shouldUpdate = false;
+		}
+
 		render(renderer);
 	}
 

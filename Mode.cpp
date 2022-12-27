@@ -42,7 +42,8 @@ void Mode::handleWindowEvent(SDL_Renderer* renderer, SDL_Event* e, ProgramState*
 			SDL_Log("Window %d resized to %dx%d", e->window.windowID, e->window.data1, e->window.data2);
 			state->SCREEN_WIDTH = e->window.data1;
 			state->SCREEN_HEIGHT = e->window.data2;
-			//update(renderer);
+
+			state->shouldUpdate = true;
 	}
 }
 

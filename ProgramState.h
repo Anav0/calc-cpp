@@ -22,6 +22,7 @@ public:
 	int SCREEN_HEIGHT = 768;
 
 	bool SHOULD_QUIT;
+	bool shouldUpdate;
 
 	ModeType CURRENT_MODE = View;
 

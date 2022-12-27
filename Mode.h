@@ -19,7 +19,6 @@ protected:
 
 public:
 	ModeType type;
-	void* updateFn;
 
 	void handleEvents(SDL_Renderer*, SDL_Event*, ProgramState*);
 };
