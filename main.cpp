@@ -8,13 +8,8 @@
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 #include <string>
+#include "Base.h"
 
-enum Direction {
-	Left,
-	Right,
-	Up,
-	Down
-};
 
 enum Mode {
 	View,
@@ -37,31 +32,6 @@ static Mode CURRENT_MODE = Mode::View;
 static SDL_Point MOUSE_POS;
 
 static TTF_Font* FONT;
-
-#define MAX_TEXT_LEN 256
-
-struct Cell {
-	SDL_Rect rect;
-
-	SDL_Rect contentRect;
-	SDL_Texture* contentTexture;
-	char content[MAX_TEXT_LEN];
-};
-
-struct Column {
-	SDL_Rect rect;
-
-	SDL_Rect textRect;
-	SDL_Texture* textTexture;
-};
-
-struct Row {
-	SDL_Rect rect;
-
-	SDL_Rect textRect;
-	SDL_Texture* textTexture;
-};
-
 
 static std::vector<Cell> CELLS;
 static std::vector<Column> COLUMNS;
