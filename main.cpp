@@ -42,7 +42,6 @@ static TTF_Font* FONT;
 
 struct Cell {
 	SDL_Rect rect;
-	SDL_bool isSelected = SDL_FALSE;
 
 	SDL_Rect contentRect;
 	SDL_Texture* contentTexture;
@@ -51,7 +50,6 @@ struct Cell {
 
 struct Column {
 	SDL_Rect rect;
-	SDL_bool isSelected = SDL_FALSE;
 
 	SDL_Rect textRect;
 	SDL_Texture* textTexture;
@@ -59,7 +57,6 @@ struct Column {
 
 struct Row {
 	SDL_Rect rect;
-	SDL_bool isSelected = SDL_FALSE;
 
 	SDL_Rect textRect;
 	SDL_Texture* textTexture;
@@ -160,7 +157,7 @@ void render(SDL_Renderer* renderer) {
 			SDL_SetRenderDrawColor(renderer, 38, 87, 82, 0xFF);
 		}
 
-		if (cell.isSelected) {
+		if (SELECTED_CELL == &cell) {
 			SDL_SetRenderDrawColor(renderer, 203, 38, 6, 0xFF);
 		}
 
@@ -333,9 +330,7 @@ void navigate(SDL_Renderer* renderer, Direction direction) {
 			Cell* newCell = getCellToThe(SELECTED_CELL, direction);
 
 			if (newCell != NULL) {
-				SELECTED_CELL->isSelected = SDL_FALSE; //Note(Igor): Remove this field from Cell;
 				SELECTED_CELL = newCell;
-				SELECTED_CELL->isSelected = SDL_TRUE;
 			}
 			break;
 		}
@@ -378,9 +373,7 @@ void handleMouseButtonDown(SDL_Renderer* renderer, SDL_Event* e) {
 		SDL_StopTextInput();
 
 		for (Cell& cell : CELLS) {
-			cell.isSelected = SDL_PointInRect(&MOUSE_POS, &cell.rect);
-
-			if (cell.isSelected) {
+			if (SDL_PointInRect(&MOUSE_POS, &cell.rect)) {
 				SELECTED_CELL = &cell;
 				SDL_StartTextInput();
 				SDL_SetTextInputRect(&cell.rect);
