@@ -50,3 +50,4 @@ public:
 	virtual void handleMouseButtonDown(SDL_Renderer*, SDL_Event*, ProgramState*) override;
 	virtual void handleTextInput(SDL_Renderer*, SDL_Event*, ProgramState*) override;
 };
+
