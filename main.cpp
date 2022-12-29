@@ -147,6 +147,7 @@ void update_rows(SDL_Renderer* renderer) {
 		SDL_Surface* text = TTF_RenderText_Blended(STATE.FONT, s.c_str(), STATE.fontColor);
 
 		row.textRect = { rect.x + ((row.rect.w - text->w) / 2), rect.y + ((row.rect.h - text->h) / 2), text->w, text->h };
+		
 		row.textTexture = SDL_CreateTextureFromSurface(renderer, text);
 
 		y += STATE.rowHeight;
