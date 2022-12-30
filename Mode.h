@@ -51,3 +51,17 @@ public:
 	virtual void handleTextInput(SDL_Renderer*, SDL_Event*, ProgramState*) override;
 };
 
+class ExprMode : public Mode {
+private:
+	void navigate(SDL_Renderer*, Direction, ProgramState*);
+	Cell* getCellToThe(Cell*, Direction, ProgramState*);
+public:
+	ExprMode() {
+		type = Expr;
+	}
+
+	// Inherited via Mode
+	virtual void handleKeydownEvent(SDL_Renderer*, SDL_Event*, ProgramState*) override;
+	virtual void handleMouseButtonDown(SDL_Renderer*, SDL_Event*, ProgramState*) override;
+	virtual void handleTextInput(SDL_Renderer*, SDL_Event*, ProgramState*) override;
+};

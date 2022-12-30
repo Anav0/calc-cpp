@@ -53,5 +53,6 @@ public:
 
 	Mode* getCurrentMode();
 	void moveCaret(int pos);
+	void moveCaretToEndOfSelectedCellText();
 	void moveCaretToStartOfSelectedCell();
 };

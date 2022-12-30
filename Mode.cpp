@@ -60,10 +60,21 @@ void EditMode::handleKeydownEvent(SDL_Renderer* renderer, SDL_Event* e, ProgramS
 	case SDL_SCANCODE_RETURN:
 		state->currentMode = View;
 		break;
+	case SDL_SCANCODE_HOME:
+		state->moveCaret(0);
+		break;
+	case SDL_SCANCODE_END:
+		state->moveCaretToEndOfSelectedCellText();
+		break;
+	case SDL_SCANCODE_DELETE:
+		if (state->caret.pos == strlen(state->selectedCell->content)) return;
+		removeAt(state->caret.pos, state->selectedCell->content);
+		updateCellContentTexture(renderer, state->FONT, state->fontColor, state->selectedCell);
+		break;
 	case SDL_SCANCODE_BACKSPACE:
 		if (state->caret.pos == 0) return;
 
-		state->moveCaret(state->caret.pos-1);
+		state->moveCaret(state->caret.pos - 1);
 		removeAt(state->caret.pos, state->selectedCell->content);
 		updateCellContentTexture(renderer, state->FONT, state->fontColor, state->selectedCell);
 		break;
@@ -88,7 +99,7 @@ void EditMode::handleTextInput(SDL_Renderer* renderer, SDL_Event* e, ProgramStat
 	if (SDL_strlen(state->selectedCell->content) + SDL_strlen(e->text.text) < MAX_TEXT_LEN) {
 		int make_room_at = state->caret.pos;
 		int room_to_make = 1;
-		
+
 		memmove(
 			state->selectedCell->content + make_room_at + room_to_make,
 			state->selectedCell->content + make_room_at,
@@ -96,7 +107,7 @@ void EditMode::handleTextInput(SDL_Renderer* renderer, SDL_Event* e, ProgramStat
 		);
 		state->selectedCell->content[state->caret.pos] = *e->text.text;
 
-		state->moveCaret(state->caret.pos+1);
+		state->moveCaret(state->caret.pos + 1);
 
 		updateCellContentTexture(renderer, state->FONT, state->fontColor, state->selectedCell);
 	}
@@ -117,7 +128,7 @@ void ViewMode::handleKeydownEvent(SDL_Renderer* renderer, SDL_Event* e, ProgramS
 			state->moveCaretToStartOfSelectedCell();
 		}
 		else {
-			state->moveCaret(0);
+			state->moveCaretToEndOfSelectedCellText();
 		}
 		state->currentMode = Edit;
 		break;
@@ -135,7 +146,6 @@ void ViewMode::handleKeydownEvent(SDL_Renderer* renderer, SDL_Event* e, ProgramS
 		break;
 	}
 }
-
 
 void ViewMode::handleMouseButtonDown(SDL_Renderer* renderer, SDL_Event* e, ProgramState* state) {
 	switch (e->button.button) {
@@ -159,8 +169,6 @@ void ViewMode::handleMouseButtonDown(SDL_Renderer* renderer, SDL_Event* e, Progr
 	}
 
 }
-
-
 
 void ViewMode::handleTextInput(SDL_Renderer* renderer, SDL_Event* e, ProgramState* state) {}
 
@@ -215,3 +223,39 @@ void ViewMode::navigate(SDL_Renderer* renderer, Direction direction, ProgramStat
 		break;
 	}
 }
+
+// ===============
+// == EXPR MODE ==
+// ===============
+
+void ExprMode::handleKeydownEvent(SDL_Renderer* renderer, SDL_Event* e, ProgramState* state)
+{
+	switch (e->key.keysym.scancode) {
+	case SDL_SCANCODE_RETURN:
+		break;
+	case SDL_SCANCODE_DOWN:
+		break;
+	case SDL_SCANCODE_UP:
+		break;
+	case SDL_SCANCODE_LEFT:
+		break;
+	case SDL_SCANCODE_RIGHT:
+		break;
+	}
+}
+
+void ExprMode::handleMouseButtonDown(SDL_Renderer* renderer, SDL_Event* e, ProgramState* state) {
+	switch (e->button.button) {
+	case SDL_BUTTON_LEFT:
+		break;
+
+	case SDL_BUTTON_RIGHT:
+		break;
+
+	case SDL_BUTTON_MIDDLE:
+		break;
+	}
+
+}
+
+void ExprMode::handleTextInput(SDL_Renderer* renderer, SDL_Event* e, ProgramState* state) {}

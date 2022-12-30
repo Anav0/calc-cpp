@@ -48,9 +48,15 @@ void ProgramState::moveCaret(int pos)
 
 	caret.pos = pos;
 }
-void ProgramState::moveCaretToStartOfSelectedCell() {
 
+void ProgramState::moveCaretToStartOfSelectedCell() {
 	caret.rect.x = selectedCell->rect.x;
 	caret.rect.y = selectedCell->rect.y;
 	caret.pos = 0;
+}
+
+void ProgramState::moveCaretToEndOfSelectedCellText() {
+	caret.rect.x = selectedCell->contentRect.x + selectedCell->contentRect.w;
+	caret.rect.y = selectedCell->contentRect.y;
+	caret.pos = strlen(selectedCell->content);
 }
