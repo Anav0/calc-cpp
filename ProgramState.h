@@ -20,8 +20,8 @@ public:
 	int colWidth = 100;
 	int colHeight = 20;
 
-	int screenWidth = 1336;
-	int screenHeight = 768;
+	int screenWidth = rowWidth + colWidth * 12;
+	int screenHeight = colHeight + rowHeight * 12;
 
 	bool shouldQuit;
 	bool shouldUpdate;
@@ -50,6 +50,7 @@ public:
 	ProgramState() {
 		_modes.push_back(new EditMode());
 		_modes.push_back(new ViewMode());
+		_modes.push_back(new ExprMode());
 
 		SDL_Rect caretRect{};
 		caretRect.x = 0;
