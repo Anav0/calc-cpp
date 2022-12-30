@@ -1,6 +1,8 @@
 #pragma once
 
 #include <vector>
+#include <cassert>
+
 #include <SDL.h>
 #include <SDL_ttf.h>
 
@@ -32,9 +34,15 @@ public:
 	SDL_Color fontColor = { 0, 0, 0, 0 };
 	TTF_Font* FONT;
 
+	SDL_Color subjectColor  = {255, 188, 71, 0};
+	SDL_Color selectedColor = {38, 87, 82, 0};
+	SDL_Color hoverColor = {38, 87, 82, 0};
+
 	Caret caret;
 
 	Cell* selectedCell;
+	Cell* subjectCell;
+
 	std::vector<Cell>   cells;
 	std::vector<Column> columns;
 	std::vector<Row>    rows;
@@ -55,4 +63,6 @@ public:
 	void moveCaret(int pos);
 	void moveCaretToEndOfSelectedCellText();
 	void moveCaretToStartOfSelectedCell();
+	std::string getCellPosLabel(Cell*);
+	Cell* getCellToThe(Cell*, Direction);
 };

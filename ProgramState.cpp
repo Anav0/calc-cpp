@@ -60,3 +60,60 @@ void ProgramState::moveCaretToEndOfSelectedCellText() {
 	caret.rect.y = selectedCell->contentRect.y;
 	caret.pos = strlen(selectedCell->content);
 }
+
+Cell* ProgramState::getCellToThe(Cell* cell, Direction direction) {
+	int numberOfColumns = columns.size();
+	int numberOfRows = rows.size();
+
+	int index;
+	for (index = 0; index < cells.size(); index++) {
+		if (cell == &cells[index]) {
+			break;
+		}
+	}
+
+	int newIndex = 0;
+	switch (direction)
+	{
+		case Left:
+			newIndex = index - 1;
+			break;
+		case Right:
+			newIndex = index + 1;
+			break;
+		case Up:
+			newIndex = index - numberOfColumns - 1;
+			break;
+		case Down:
+			newIndex = index + numberOfColumns + 1;
+			break;
+	}
+
+	if (newIndex < 0 || newIndex > cells.size()) return NULL;
+
+	return &cells[newIndex];
+}
+
+std::string ProgramState::getCellPosLabel(Cell* cell){
+	int cellIndex = NULL;
+
+	for (int i = 0; i < sizeof(cells); i++) {
+		if (&cells[i] == cell) {
+			cellIndex = i;
+			break;
+		}
+	}
+
+	assert(cellIndex != NULL);
+
+	int numberOfCols = sizeof(columns);
+	int numberOfRows = sizeof(rows);
+
+	int col = numberOfCols % cellIndex;
+	int row = numberOfRows % cellIndex;
+
+	std::string colLabel = columns[col].content;
+	std::string rowLabel = rows[row].content;
+
+	return (colLabel + rowLabel);
+}
