@@ -21,7 +21,7 @@ public:
 	int colHeight = 20;
 
 	int screenWidth = rowWidth + colWidth * 12;
-	int screenHeight = colHeight + rowHeight * 12;
+	int screenHeight = colHeight + rowHeight * 40;
 
 	bool shouldQuit;
 	bool shouldUpdate;

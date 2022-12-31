@@ -1,4 +1,5 @@
 #include "Mode.h"
+#include <regex>
 
 #include "ProgramState.h"
 
@@ -178,6 +179,12 @@ void ViewMode::navigate(SDL_Renderer* renderer, Direction direction, ProgramStat
 // == EXPR MODE ==
 // ===============
 
+void ExprMode::addOperator(SDL_Renderer* renderer, char sign, ProgramState* state) {
+	state->subjectCell->content += sign;
+	state->subjectInsertPos=state->subjectCell->content.length();
+	updateCellContentTexture(renderer, state->FONT, state->fontColor, state->subjectCell);
+}
+
 void ExprMode::navigate(SDL_Renderer* renderer, Direction dir, ProgramState* state)
 {
 	Cell* cell = state->getCellToThe(state->selectedCell, dir);
@@ -197,10 +204,67 @@ void ExprMode::navigate(SDL_Renderer* renderer, Direction dir, ProgramState* sta
 	
 }
 
+void ExprMode::evaluate(SDL_Renderer* renderer, ProgramState* state) {
+	std::string expr = state->subjectCell->content;
+
+	expr = expr.erase(0, 1);
+
+	std::regex labelsRgx(R"(([A-Z])+(\d)+)");
+	std::smatch match;
+
+	bool haveCellPosToReplace = true;
+	while (haveCellPosToReplace) {
+		std::string exprCopy = expr;
+		auto regexIterStart = std::sregex_iterator(exprCopy.begin(), exprCopy.end(), labelsRgx);
+		auto regexIterEnd = std::sregex_iterator();
+	
+		haveCellPosToReplace = false;
+		for (std::sregex_iterator i = regexIterStart; i != regexIterEnd; ++i) {
+	
+			haveCellPosToReplace = true;
+
+			std::smatch match = *i;
+	
+			assert(match.length() == 2);
+	
+			std::string cellPos = match[0];
+			std::string col = match[1];
+	
+			int rowIndex = std::stoi(match[2]) - 1;
+			int colIndex = (int)col[0] - 65;
+			int cellIndex = (rowIndex * state->columns.size()) + colIndex;
+	
+			assert(cellIndex <= state->cells.size());
+	
+			Cell* cell = &state->cells[cellIndex];
+	
+			std::regex r(cellPos);
+			expr = std::regex_replace(expr, r, cell->content); //Info(Igor): slooooow
+		}
+	}
+
+	double result = te_interp(expr.c_str(), 0);
+
+	if (result == NAN) {
+		printf("Failed to parse expression: '%s'", expr);
+		assert(result != NAN);
+	}
+
+	state->subjectCell->formula    = state->subjectCell->content;
+	state->subjectCell->content    = std::to_string(result);
+	updateCellContentTexture(renderer, state->FONT, state->fontColor, state->subjectCell);
+
+	state->currentMode = View;
+	state->subjectCell = NULL;
+	state->subjectInsertPos = 1;
+}
+
 void ExprMode::handleKeydownEvent(SDL_Renderer* renderer, SDL_Event* e, ProgramState* state)
 {
 	switch (e->key.keysym.scancode) {
+	
 	case SDL_SCANCODE_RETURN:
+		evaluate(renderer, state);
 		break;
 	case SDL_SCANCODE_DOWN:
 		navigate(renderer, Direction::Down, state);
@@ -214,8 +278,21 @@ void ExprMode::handleKeydownEvent(SDL_Renderer* renderer, SDL_Event* e, ProgramS
 	case SDL_SCANCODE_RIGHT:
 		navigate(renderer, Direction::Right, state);
 		break;
+	case SDL_SCANCODE_KP_PLUS:
+		addOperator(renderer, '+', state);
+		break;
+	case SDL_SCANCODE_KP_MINUS:
+		addOperator(renderer, '-', state);
+		break;
+	case SDL_SCANCODE_KP_MULTIPLY:
+		addOperator(renderer, '*', state);
+		break;
+
 	}
+
 }
+
+
 
 void ExprMode::handleMouseButtonDown(SDL_Renderer* renderer, SDL_Event* e, ProgramState* state) {
 	switch (e->button.button) {
@@ -232,5 +309,7 @@ void ExprMode::handleMouseButtonDown(SDL_Renderer* renderer, SDL_Event* e, Progr
 }
 
 void ExprMode::handleTextInput(SDL_Renderer* renderer, SDL_Event* e, ProgramState* state) {
+
+
 
 }

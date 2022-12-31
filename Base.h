@@ -41,6 +41,7 @@ struct Cell {
 	SDL_Rect contentRect;
 	SDL_Texture* contentTexture;
 	std::string content;
+	std::string formula;
 
 	uint16_t index;
 };
