@@ -71,15 +71,14 @@ void EditMode::handleKeydownEvent(SDL_Renderer* renderer, SDL_Event* e, ProgramS
 		state->moveCaretToEndOfSelectedCellText();
 		break;
 	case SDL_SCANCODE_DELETE:
-		if (state->caret.pos == strlen(state->selectedCell->content)) return;
-		removeAt(state->caret.pos, state->selectedCell->content);
+		if (state->caret.pos == state->selectedCell->content.length()) return;
+		state->selectedCell->content.erase(state->caret.pos, 1);
 		updateCellContentTexture(renderer, state->FONT, state->fontColor, state->selectedCell);
 		break;
 	case SDL_SCANCODE_BACKSPACE:
 		if (state->caret.pos == 0) return;
-
 		state->moveCaret(state->caret.pos - 1);
-		removeAt(state->caret.pos, state->selectedCell->content);
+		state->selectedCell->content.erase(state->caret.pos, 1);
 		updateCellContentTexture(renderer, state->FONT, state->fontColor, state->selectedCell);
 		break;
 	case SDL_SCANCODE_DOWN:
@@ -100,16 +99,9 @@ void EditMode::handleMouseButtonDown(SDL_Renderer* renderer, SDL_Event* e, Progr
 }
 
 void EditMode::handleTextInput(SDL_Renderer* renderer, SDL_Event* e, ProgramState* state) {
-	if (SDL_strlen(state->selectedCell->content) + SDL_strlen(e->text.text) < MAX_TEXT_LEN) {
-		int make_room_at = state->caret.pos;
-		int room_to_make = 1;
+	if (state->selectedCell->content.length() + SDL_strlen(e->text.text) < MAX_TEXT_LEN) {
 
-		memmove(
-			state->selectedCell->content + make_room_at + room_to_make,
-			state->selectedCell->content + make_room_at,
-			MAX_TEXT_LEN - (make_room_at + room_to_make)
-		);
-		state->selectedCell->content[state->caret.pos] = *e->text.text;
+		state->selectedCell->content += *e->text.text;
 
 		state->moveCaret(state->caret.pos + 1);
 
@@ -120,6 +112,7 @@ void EditMode::handleTextInput(SDL_Renderer* renderer, SDL_Event* e, ProgramStat
 	}
 
 	if (state->selectedCell->content[0] == '=') {
+		state->subjectInsertPos = 1;
 		state->subjectCell = state->selectedCell;
 		state->currentMode = Expr;
 	}
@@ -194,8 +187,11 @@ void ExprMode::navigate(SDL_Renderer* renderer, Direction dir, ProgramState* sta
 
 		std::string label = state->getCellPosLabel(cell);
 
-		memset(state->subjectCell->content, 0, MAX_TEXT_LEN);
-		label.copy(state->subjectCell->content, MAX_TEXT_LEN);
+		if(state->subjectCell->content.length() < state->subjectInsertPos)
+			state->subjectCell->content += label;
+		else
+			state->subjectCell->content.replace(state->subjectInsertPos, label.length(), label);
+
 		updateCellContentTexture(renderer, state->FONT, state->fontColor, state->subjectCell);
 	}
 	

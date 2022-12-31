@@ -24,10 +24,10 @@ void ProgramState::moveCaret(int pos)
 		return;
 	}
 
-	if (pos > strlen(cell->content)) return;
+	if (pos > cell->content.length()) return;
 
 	int charW, charH;
-	const char* cellText = cell->content;
+	std::string cellText = cell->content;
 	const int caretCurrentPos = caret.pos;
 
 	int posToTake = pos;
@@ -58,7 +58,7 @@ void ProgramState::moveCaretToStartOfSelectedCell() {
 void ProgramState::moveCaretToEndOfSelectedCellText() {
 	caret.rect.x = selectedCell->contentRect.x + selectedCell->contentRect.w;
 	caret.rect.y = selectedCell->contentRect.y;
-	caret.pos = strlen(selectedCell->content);
+	caret.pos = selectedCell->content.length();
 }
 
 Cell* ProgramState::getCellToThe(Cell* cell, Direction direction) {
