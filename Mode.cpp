@@ -62,7 +62,7 @@ void EditMode::handleKeydownEvent(SDL_Renderer* renderer, SDL_Event* e, ProgramS
 
 		if (state->selectedCell->formula != "") {
 			evaluate(state->selectedCell, state->cells, state->columns);
-			updateCellContentTexture(renderer, state->FONT, state->fontColor, state->selectedCell);
+			state->selectedCell->updateContentTexture(renderer, state->FONT, state->fontColor);
 			state->currentMode = View;
 			state->subjectCell = NULL;
 			state->subjectInsertPos = 1;
@@ -72,7 +72,7 @@ void EditMode::handleKeydownEvent(SDL_Renderer* renderer, SDL_Event* e, ProgramS
 	case SDL_SCANCODE_RETURN:
 		if (state->selectedCell->formula != "") {
 			evaluate(state->selectedCell, state->cells, state->columns);
-			updateCellContentTexture(renderer, state->FONT, state->fontColor, state->selectedCell);
+			state->selectedCell->updateContentTexture(renderer, state->FONT, state->fontColor);
 			state->currentMode = View;
 			state->subjectCell = NULL;
 			state->subjectInsertPos = 1;
@@ -89,13 +89,13 @@ void EditMode::handleKeydownEvent(SDL_Renderer* renderer, SDL_Event* e, ProgramS
 	case SDL_SCANCODE_DELETE:
 		if (state->caret.pos == state->selectedCell->content.length()) return;
 		state->selectedCell->content.erase(state->caret.pos, 1);
-		updateCellContentTexture(renderer, state->FONT, state->fontColor, state->selectedCell);
+		state->selectedCell->updateContentTexture(renderer, state->FONT, state->fontColor);
 		break;
 	case SDL_SCANCODE_BACKSPACE:
 		if (state->caret.pos == 0) return;
 		state->moveCaret(state->caret.pos - 1);
 		state->selectedCell->content.erase(state->caret.pos, 1);
-		updateCellContentTexture(renderer, state->FONT, state->fontColor, state->selectedCell);
+		state->selectedCell->updateContentTexture(renderer, state->FONT, state->fontColor);
 		break;
 	case SDL_SCANCODE_DOWN:
 		break;
@@ -121,7 +121,7 @@ void EditMode::handleTextInput(SDL_Renderer* renderer, SDL_Event* e, ProgramStat
 
 		state->moveCaret(state->caret.pos + 1);
 
-		updateCellContentTexture(renderer, state->FONT, state->fontColor, state->selectedCell);
+		state->selectedCell->updateContentTexture(renderer, state->FONT, state->fontColor);
 	}
 	else {
 		printf("Input is too big!\n");
@@ -145,7 +145,7 @@ void ViewMode::handleKeydownEvent(SDL_Renderer* renderer, SDL_Event* e, ProgramS
 
 		if (state->selectedCell->formula != "") {
 			state->selectedCell->content = state->selectedCell->formula;
-			updateCellContentTexture(renderer, state->FONT, state->fontColor, state->selectedCell);
+			state->selectedCell->updateContentTexture(renderer, state->FONT, state->fontColor);
 		}
 
 		if (state->selectedCell->content[0] == '\0') {
@@ -203,7 +203,7 @@ void ViewMode::navigate(SDL_Renderer* renderer, Direction direction, ProgramStat
 void ExprMode::addOperator(SDL_Renderer* renderer, char sign, ProgramState* state) {
 	state->subjectCell->content += sign;
 	state->subjectInsertPos=state->subjectCell->content.length();
-	updateCellContentTexture(renderer, state->FONT, state->fontColor, state->subjectCell);
+	state->subjectCell->updateContentTexture(renderer, state->FONT, state->fontColor);
 }
 
 void ExprMode::navigate(SDL_Renderer* renderer, Direction dir, ProgramState* state)
@@ -220,7 +220,7 @@ void ExprMode::navigate(SDL_Renderer* renderer, Direction dir, ProgramState* sta
 		else
 			state->subjectCell->content.replace(state->subjectInsertPos, label.length(), label);
 
-		updateCellContentTexture(renderer, state->FONT, state->fontColor, state->subjectCell);
+		state->subjectCell->updateContentTexture(renderer, state->FONT, state->fontColor);
 	}
 	
 }
@@ -231,7 +231,7 @@ void ExprMode::handleKeydownEvent(SDL_Renderer* renderer, SDL_Event* e, ProgramS
 	
 	case SDL_SCANCODE_RETURN:
 		evaluate(state->subjectCell, state->cells, state->columns);
-		updateCellContentTexture(renderer, state->FONT, state->fontColor, state->selectedCell);
+		state->selectedCell->updateContentTexture(renderer, state->FONT, state->fontColor);
 		state->currentMode = View;
 		state->subjectCell = NULL;
 		state->subjectInsertPos = 1;
