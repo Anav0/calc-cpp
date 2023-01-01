@@ -1,5 +1,4 @@
 #include "Mode.h"
-#include <regex>
 
 #include "ProgramState.h"
 
@@ -60,9 +59,25 @@ void EditMode::handleKeydownEvent(SDL_Renderer* renderer, SDL_Event* e, ProgramS
 {
 	switch (e->key.keysym.scancode) {
 	case SDL_SCANCODE_ESCAPE:
+
+		if (state->selectedCell->formula != "") {
+			evaluate(state->selectedCell, state->cells, state->columns);
+			updateCellContentTexture(renderer, state->FONT, state->fontColor, state->selectedCell);
+			state->currentMode = View;
+			state->subjectCell = NULL;
+			state->subjectInsertPos = 1;
+		}
 		state->currentMode = View;
 		break;
 	case SDL_SCANCODE_RETURN:
+		if (state->selectedCell->formula != "") {
+			evaluate(state->selectedCell, state->cells, state->columns);
+			updateCellContentTexture(renderer, state->FONT, state->fontColor, state->selectedCell);
+			state->currentMode = View;
+			state->subjectCell = NULL;
+			state->subjectInsertPos = 1;
+		}
+		state->selectedCell = state->getCellToThe(state->selectedCell, Down);
 		state->currentMode = View;
 		break;
 	case SDL_SCANCODE_HOME:
@@ -126,7 +141,13 @@ void EditMode::handleTextInput(SDL_Renderer* renderer, SDL_Event* e, ProgramStat
 void ViewMode::handleKeydownEvent(SDL_Renderer* renderer, SDL_Event* e, ProgramState* state)
 {
 	switch (e->key.keysym.scancode) {
-	case SDL_SCANCODE_RETURN:
+		case SDL_SCANCODE_RETURN:
+
+		if (state->selectedCell->formula != "") {
+			state->selectedCell->content = state->selectedCell->formula;
+			updateCellContentTexture(renderer, state->FONT, state->fontColor, state->selectedCell);
+		}
+
 		if (state->selectedCell->content[0] == '\0') {
 			state->moveCaretToStartOfSelectedCell();
 		}
@@ -204,67 +225,16 @@ void ExprMode::navigate(SDL_Renderer* renderer, Direction dir, ProgramState* sta
 	
 }
 
-void ExprMode::evaluate(SDL_Renderer* renderer, ProgramState* state) {
-	std::string expr = state->subjectCell->content;
-
-	expr = expr.erase(0, 1);
-
-	std::regex labelsRgx(R"(([A-Z])+(\d)+)");
-	std::smatch match;
-
-	bool haveCellPosToReplace = true;
-	while (haveCellPosToReplace) {
-		std::string exprCopy = expr;
-		auto regexIterStart = std::sregex_iterator(exprCopy.begin(), exprCopy.end(), labelsRgx);
-		auto regexIterEnd = std::sregex_iterator();
-	
-		haveCellPosToReplace = false;
-		for (std::sregex_iterator i = regexIterStart; i != regexIterEnd; ++i) {
-	
-			haveCellPosToReplace = true;
-
-			std::smatch match = *i;
-	
-			assert(match.length() == 2);
-	
-			std::string cellPos = match[0];
-			std::string col = match[1];
-	
-			int rowIndex = std::stoi(match[2]) - 1;
-			int colIndex = (int)col[0] - 65;
-			int cellIndex = (rowIndex * state->columns.size()) + colIndex;
-	
-			assert(cellIndex <= state->cells.size());
-	
-			Cell* cell = &state->cells[cellIndex];
-	
-			std::regex r(cellPos);
-			expr = std::regex_replace(expr, r, cell->content); //Info(Igor): slooooow
-		}
-	}
-
-	double result = te_interp(expr.c_str(), 0);
-
-	if (result == NAN) {
-		printf("Failed to parse expression: '%s'", expr);
-		assert(result != NAN);
-	}
-
-	state->subjectCell->formula    = state->subjectCell->content;
-	state->subjectCell->content    = std::to_string(result);
-	updateCellContentTexture(renderer, state->FONT, state->fontColor, state->subjectCell);
-
-	state->currentMode = View;
-	state->subjectCell = NULL;
-	state->subjectInsertPos = 1;
-}
-
 void ExprMode::handleKeydownEvent(SDL_Renderer* renderer, SDL_Event* e, ProgramState* state)
 {
 	switch (e->key.keysym.scancode) {
 	
 	case SDL_SCANCODE_RETURN:
-		evaluate(renderer, state);
+		evaluate(state->subjectCell, state->cells, state->columns);
+		updateCellContentTexture(renderer, state->FONT, state->fontColor, state->selectedCell);
+		state->currentMode = View;
+		state->subjectCell = NULL;
+		state->subjectInsertPos = 1;
 		break;
 	case SDL_SCANCODE_DOWN:
 		navigate(renderer, Direction::Down, state);
@@ -291,8 +261,6 @@ void ExprMode::handleKeydownEvent(SDL_Renderer* renderer, SDL_Event* e, ProgramS
 	}
 
 }
-
-
 
 void ExprMode::handleMouseButtonDown(SDL_Renderer* renderer, SDL_Event* e, ProgramState* state) {
 	switch (e->button.button) {
