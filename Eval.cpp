@@ -7,7 +7,7 @@ void evaluate(Cell* cell, const std::vector<Cell>& cells, const std::vector<Colu
 		expr = cell->formula;
 	}
 
-	expr = expr.erase(0, 1);
+	expr = expr.erase(0, 1); // Removes '='
 
 	std::regex labelsRgx(R"(([A-Z])+(\d)+)");
 	std::smatch match;
@@ -16,7 +16,7 @@ void evaluate(Cell* cell, const std::vector<Cell>& cells, const std::vector<Colu
 	while (haveCellPosToReplace) {
 		std::string exprCopy = expr;
 		auto regexIterStart = std::sregex_iterator(exprCopy.begin(), exprCopy.end(), labelsRgx);
-		auto regexIterEnd = std::sregex_iterator();
+		auto regexIterEnd   = std::sregex_iterator();
 
 		haveCellPosToReplace = false;
 		for (std::sregex_iterator i = regexIterStart; i != regexIterEnd; ++i) {
@@ -43,13 +43,13 @@ void evaluate(Cell* cell, const std::vector<Cell>& cells, const std::vector<Colu
 		}
 	}
 
-	double result = te_interp(expr.c_str(), 0);
-
-	if (result == NAN) {
-		printf("Failed to parse expression: '%s'", expr);
-		assert(result != NAN);
-	}
-
+	int err = 0;
+	double result = te_interp(expr.c_str(), &err);
 	cell->formula = cell->content;
-	cell->content = std::to_string(result);
+
+	if (err) {
+		cell->content = "Err";
+	} else {
+		cell->content = std::to_string(result);
+	}
 }
