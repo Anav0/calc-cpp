@@ -77,9 +77,6 @@ void render(SDL_Renderer* renderer) {
 	SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
 	SDL_RenderClear(renderer);
 
-	// Sloooooow
-	std::string activeCellLabel = STATE.getCellPosLabel(STATE.selectedCell);
-
 	for (const Cell& cell : STATE.cells)
 	{
 		SDL_SetRenderDrawColor(renderer, 192, 192, 192, 0xFF);
@@ -99,6 +96,7 @@ void render(SDL_Renderer* renderer) {
 			SDL_RenderCopy(renderer, cell.contentTexture, NULL, &cell.contentRect);
 	}
 
+	int colIndex = 0;
 	for (const Column& column : STATE.columns)
 	{
 		SDL_SetRenderDrawColor(renderer, 248, 249, 250, 0xFF);
@@ -106,15 +104,16 @@ void render(SDL_Renderer* renderer) {
 		SDL_SetRenderDrawColor(renderer, 67, 66, 61, 0xFF);
 		SDL_RenderDrawRect(renderer, &column.rect);
 
-		// Note(Igor): this will not on columns like: AAA12
-		if (column.content[0] == activeCellLabel[0]) {
+		if (colIndex == STATE.selectedCell->colIndex) {
 			SDL_SetRenderDrawColor(renderer, STATE.activeColumnColor.r, STATE.activeColumnColor.g, STATE.activeColumnColor.b, STATE.activeColumnColor.a);
 			SDL_RenderFillRect(renderer, &column.rect);
 		}
 
 		SDL_RenderCopy(renderer, column.textTexture, NULL, &column.textRect);
+		colIndex++;
 	}
 
+	int rowIndex = 0;
 	for (const Row& row : STATE.rows)
 	{
 		SDL_SetRenderDrawColor(renderer, 248, 249, 250, 0xFF);
@@ -122,12 +121,13 @@ void render(SDL_Renderer* renderer) {
 		SDL_SetRenderDrawColor(renderer, 67, 66, 61, 0xFF);
 		SDL_RenderDrawRect(renderer, &row.rect);
 
-		if (row.content == activeCellLabel.substr(1)) {
+		if (rowIndex == STATE.selectedCell->rowIndex) {
 			SDL_SetRenderDrawColor(renderer, STATE.activeRowColor.r, STATE.activeRowColor.g, STATE.activeRowColor.b, STATE.activeRowColor.a);
 			SDL_RenderFillRect(renderer, &row.rect);
 		}
 
 		SDL_RenderCopy(renderer, row.textTexture, NULL, &row.textRect);
+		rowIndex++;
 	}
 
 	if (STATE.currentMode == Edit) {
@@ -212,6 +212,8 @@ void update_cells() {
 	uint16_t i = 0;
 	int cellsInRow = 0;
 	int observedNumberOfRows = 0;
+	int rowIndex    = 0;
+	int columnIndex = 0;
 	while (true)
 	{
 		SDL_Rect cellRect{};
@@ -228,12 +230,16 @@ void update_cells() {
 			assert(cellsInRow == STATE.columns.size());
 			cellsInRow = 0;
 			observedNumberOfRows += 1;
+			rowIndex++;
+			columnIndex = 0;
 		}
 
 		cellRect.y = y;
 		cellRect.x = x;
 
 		cell.rect = cellRect;
+		cell.colIndex = columnIndex;
+		cell.rowIndex = rowIndex;
 
 		screenIsFilled = y >= STATE.screenHeight;
 		if (screenIsFilled) break;
@@ -241,8 +247,10 @@ void update_cells() {
 		STATE.cells.push_back(cell);
 		i++;
 		cellsInRow++;
+		columnIndex++;
 		x += STATE.colWidth;
 	}
+
 	int numberOfCols = STATE.columns.size();
 	int numberOfRows = STATE.rows.size();
 	int expectedNumberOfCells = numberOfCols * numberOfRows;
