@@ -24,13 +24,12 @@ void evaluate(Cell* cell, const std::vector<Cell>& cells, const std::vector<Colu
 			haveCellPosToReplace = true;
 
 			std::smatch match = *i;
-
-			assert(match.length() == 2);
-
 			std::string cellPos = match[0];
-			std::string col = match[1];
 
-			int rowIndex = std::stoi(match[2]) - 1;
+			//Note(Igor): this will not work on two and more char columns 
+			std::string col = cellPos.substr(0, 1);
+			int rowIndex = std::stoi(cellPos.substr(1)) - 1;
+
 			int colIndex = (int)col[0] - 65;
 			int cellIndex = (rowIndex * columns.size()) + colIndex;
 
