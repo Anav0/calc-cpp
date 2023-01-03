@@ -4,4 +4,7 @@
 	[] Usuwanie ref. do komórek powinno usuwać cały symbol np. A1 po usunięciu 1 powinno zniknąć
 	[] Zaznaczanie kolorami używanych w wyrazeniu komórek
 	[] Ustawienia powinny być pobierane z pliku
-	[] Del powinien czyścić komórkę
+	[x] Del powinien czyścić komórkę
+	[x] Po rozpoczęciu pisania, program automatycznie powinien przechodzić w tryb "Edit"
+	[] Kursor powinien fajnie migać
+	[] Wycignij "centrowanie" prostokątów do osobnych funkcj
