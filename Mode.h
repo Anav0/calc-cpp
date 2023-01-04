@@ -19,6 +19,11 @@ protected:
 
 public:
 	ModeType type;
+	SDL_Color color;
+
+	Mode() {
+		color = { 255, 206, 69, 0 };
+	}
 
 	void handleEvents(SDL_Renderer*, SDL_Event*, ProgramState*);
 };
@@ -28,6 +33,7 @@ class EditMode : public Mode {
 public:
 	EditMode() {
 		type = Edit;
+		color = { 206, 152, 250, 0 };
 	}
 
 	// Inherited via Mode
@@ -58,6 +64,7 @@ private:
 public:
 	ExprMode() {
 		type = Expr;
+		color = { 115, 202, 246, 0 };
 	}
 
 	// Inherited via Mode

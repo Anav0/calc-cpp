@@ -77,6 +77,8 @@ void render(SDL_Renderer* renderer) {
 	SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
 	SDL_RenderClear(renderer);
 
+	SDL_Color modeColor = STATE.getCurrentMode()->color;
+
 	for (const Cell& cell : STATE.cells)
 	{
 		SDL_SetRenderDrawColor(renderer, 192, 192, 192, 0xFF);
@@ -88,7 +90,7 @@ void render(SDL_Renderer* renderer) {
 			SDL_SetRenderDrawColor(renderer, STATE.subjectColor.r, STATE.subjectColor.g, STATE.subjectColor.b, STATE.subjectColor.a);
 
 		if (STATE.selectedCell == &cell)
-			SDL_SetRenderDrawColor(renderer, STATE.selectedColor.r, STATE.selectedColor.g, STATE.selectedColor.b, STATE.selectedColor.a);
+			SDL_SetRenderDrawColor(renderer, modeColor.r, modeColor.g, modeColor.b, modeColor.a);
 
 		SDL_RenderDrawRect(renderer, &cell.rect);
 
@@ -105,7 +107,7 @@ void render(SDL_Renderer* renderer) {
 		SDL_RenderDrawRect(renderer, &column.rect);
 
 		if (colIndex == STATE.selectedCell->colIndex) {
-			SDL_SetRenderDrawColor(renderer, STATE.activeColumnColor.r, STATE.activeColumnColor.g, STATE.activeColumnColor.b, STATE.activeColumnColor.a);
+			SDL_SetRenderDrawColor(renderer, modeColor.r, modeColor.g, modeColor.b, modeColor.a);
 			SDL_RenderFillRect(renderer, &column.rect);
 		}
 
@@ -122,7 +124,7 @@ void render(SDL_Renderer* renderer) {
 		SDL_RenderDrawRect(renderer, &row.rect);
 
 		if (rowIndex == STATE.selectedCell->rowIndex) {
-			SDL_SetRenderDrawColor(renderer, STATE.activeRowColor.r, STATE.activeRowColor.g, STATE.activeRowColor.b, STATE.activeRowColor.a);
+			SDL_SetRenderDrawColor(renderer, modeColor.r, modeColor.g, modeColor.b, modeColor.a);
 			SDL_RenderFillRect(renderer, &row.rect);
 		}
 

@@ -1,5 +1,13 @@
+21:04 - 04.01.2023
+	[x] Kolor na podstawie aktualnego trybu
+	[] Kopiowanie i wklejanie tekstu
+	[] Zaznaczanie fragmentów komórek
+	[] Wyrównywanie, pogrubianie, italizowanie etc.
+	[] hot loading config
+	[]
+
 22:00 - 03.01.2023
-	[] Padding dla komórek
+	[x] Padding dla komórek
 	[x] Zaznaczanie kolumn i wierszy kolorem gdy komórka jest zaznaczona
 	[] Usuwanie ref. do komórek powinno usuwać cały symbol np. A1 po usunięciu 1 powinno zniknąć
 	[] Zaznaczanie kolorami używanych w wyrazeniu komórek
@@ -7,4 +15,4 @@
 	[x] Del powinien czyścić komórkę
 	[x] Po rozpoczęciu pisania, program automatycznie powinien przechodzić w tryb "Edit"
 	[] Kursor powinien fajnie migać
-	[] Wycignij "centrowanie" prostokątów do osobnych funkcj
+	[] Wycignij "centrowanie" prostokątów do osobnych funkcji
