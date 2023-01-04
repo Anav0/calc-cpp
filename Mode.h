@@ -16,7 +16,7 @@ protected:
 	virtual void handleTextInput(SDL_Renderer*, SDL_Event*, ProgramState*);
 	virtual void handleMouseMotion(SDL_Renderer*, SDL_Event*, ProgramState*);
 	virtual void handleWindowEvent(SDL_Renderer*, SDL_Event*, ProgramState*);
-
+	
 public:
 	ModeType type;
 	SDL_Color color;
@@ -26,9 +26,12 @@ public:
 	}
 
 	void handleEvents(SDL_Renderer*, SDL_Event*, ProgramState*);
+	virtual void onSwitchTo(SDL_Renderer*, ProgramState*);
 };
 
 class EditMode : public Mode {
+private:
+	void moveToExprMode(SDL_Renderer*, ProgramState*, Direction);
 	
 public:
 	EditMode() {
@@ -40,6 +43,7 @@ public:
 	virtual void handleKeydownEvent(SDL_Renderer*, SDL_Event*, ProgramState*) override;
 	virtual void handleMouseButtonDown(SDL_Renderer*, SDL_Event*, ProgramState*) override;
 	virtual void handleTextInput(SDL_Renderer*, SDL_Event*, ProgramState*) override;
+	virtual void onSwitchTo(SDL_Renderer*, ProgramState*) override;
 };
 
 class ViewMode : public Mode {
@@ -69,6 +73,5 @@ public:
 
 	// Inherited via Mode
 	virtual void handleKeydownEvent(SDL_Renderer*, SDL_Event*, ProgramState*) override;
-	virtual void handleMouseButtonDown(SDL_Renderer*, SDL_Event*, ProgramState*) override;
-	virtual void handleTextInput(SDL_Renderer*, SDL_Event*, ProgramState*) override;
+	virtual void onSwitchTo(SDL_Renderer*, ProgramState*) override;
 };

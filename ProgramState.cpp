@@ -92,3 +92,12 @@ std::string ProgramState::getCellPosLabel(Cell* cell){
 
 	return (colLabel + rowLabel);
 }
+
+void ProgramState::switchMode(SDL_Renderer* renderer, ModeType modeType) {
+
+	currentMode = modeType;
+
+	Mode* mode = getCurrentMode();
+
+	mode->onSwitchTo(renderer, this);
+}

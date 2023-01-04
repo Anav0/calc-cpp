@@ -50,34 +50,51 @@ void Mode::handleWindowEvent(SDL_Renderer* renderer, SDL_Event* e, ProgramState*
 void Mode::handleKeydownEvent(SDL_Renderer*, SDL_Event*, ProgramState*) {};
 void Mode::handleMouseButtonDown(SDL_Renderer*, SDL_Event*, ProgramState*) {};
 void Mode::handleTextInput(SDL_Renderer*, SDL_Event*, ProgramState*) {};
+void Mode::onSwitchTo(SDL_Renderer*, ProgramState*) {};
 
 // ===============
 // == EDIT MODE ==
 // ===============
 
+void EditMode::onSwitchTo(SDL_Renderer* renderer, ProgramState* state) {
+
+	if (state->selectedCell->formula != "") {
+		state->selectedCell->content = state->selectedCell->formula;
+		state->selectedCell->updateContentTexture(renderer, state->font, state->fontColor, state->cellPadding);
+	}
+
+	if(state->selectedCell->content.length() == 0)
+		state->moveCaretToStartOfSelectedCell();
+	else
+		state->moveCaretToEndOfSelectedCellText();
+}
+
+void EditMode::moveToExprMode(SDL_Renderer* renderer, ProgramState* state, Direction dir) {
+	Cell* newCell = state->getCellToThe(state->selectedCell, dir);
+
+	if (newCell == NULL) return;
+
+	state->subjectCell = state->selectedCell;
+	state->selectedCell = newCell;
+	state->subjectInsertPos = 1; //Note(Igor): not always correct index
+	state->switchMode(renderer, Expr);
+}
+
 void EditMode::handleKeydownEvent(SDL_Renderer* renderer, SDL_Event* e, ProgramState* state)
 {
 	switch (e->key.keysym.scancode) {
 	case SDL_SCANCODE_ESCAPE:
-		if (state->selectedCell->formula != "") {
-			evaluate(state->selectedCell, state->cells, state->columns);
+		if(evaluate(state->selectedCell, state->cells, state->columns))
 			state->selectedCell->updateContentTexture(renderer, state->font, state->fontColor, state->cellPadding);
-			state->currentMode = View;
-			state->subjectCell = NULL;
-			state->subjectInsertPos = 1;
-		}
-		state->currentMode = View;
+
+		state->switchMode(renderer, View);
 		break;
 	case SDL_SCANCODE_RETURN:
-		if (state->selectedCell->formula != "") {
-			evaluate(state->selectedCell, state->cells, state->columns);
-			state->selectedCell->updateContentTexture(renderer, state->font, state->fontColor, state->cellPadding);
-			state->currentMode = View;
-			state->subjectCell = NULL;
-			state->subjectInsertPos = 1;
-		}
+		if(evaluate(state->selectedCell, state->cells, state->columns))
+			state->selectedCell->updateContentTexture(renderer, state->font,state->fontColor, state->cellPadding);
+
 		state->selectedCell = state->getCellToThe(state->selectedCell, Down);
-		state->currentMode = View;
+		state->switchMode(renderer, View);
 		break;
 	case SDL_SCANCODE_HOME:
 		state->moveCaret(0);
@@ -88,17 +105,28 @@ void EditMode::handleKeydownEvent(SDL_Renderer* renderer, SDL_Event* e, ProgramS
 	case SDL_SCANCODE_DELETE:
 		if (state->caret.pos == state->selectedCell->content.length()) return;
 		state->selectedCell->content.erase(state->caret.pos, 1);
+
+		if (state->selectedCell->formula != "")
+			state->selectedCell->formula = state->selectedCell->content;
+
 		state->selectedCell->updateContentTexture(renderer, state->font, state->fontColor, state->cellPadding);
 		break;
 	case SDL_SCANCODE_BACKSPACE:
 		if (state->caret.pos == 0) return;
 		state->moveCaret(state->caret.pos - 1);
 		state->selectedCell->content.erase(state->caret.pos, 1);
+
+		if (state->selectedCell->formula != "")
+			state->selectedCell->formula = state->selectedCell->content;
+
 		state->selectedCell->updateContentTexture(renderer, state->font, state->fontColor, state->cellPadding);
 		break;
 	case SDL_SCANCODE_DOWN:
-		break;
+		if (state->selectedCell->content[0] == '=')
+			moveToExprMode(renderer, state, Down);
 	case SDL_SCANCODE_UP:
+		if (state->selectedCell->content[0] == '=')
+			moveToExprMode(renderer, state, Up);
 		break;
 	case SDL_SCANCODE_LEFT:
 		state->moveCaret(state->caret.pos - 1);
@@ -110,7 +138,7 @@ void EditMode::handleKeydownEvent(SDL_Renderer* renderer, SDL_Event* e, ProgramS
 }
 
 void EditMode::handleMouseButtonDown(SDL_Renderer* renderer, SDL_Event* e, ProgramState* state) {
-	state->currentMode = View;
+	state->switchMode(renderer, View);
 }
 
 void EditMode::handleTextInput(SDL_Renderer* renderer, SDL_Event* e, ProgramState* state) {
@@ -125,12 +153,6 @@ void EditMode::handleTextInput(SDL_Renderer* renderer, SDL_Event* e, ProgramStat
 	else {
 		printf("Input is too big!\n");
 	}
-
-	if (state->selectedCell->content[0] == '=') {
-		state->subjectInsertPos = 1;
-		state->subjectCell = state->selectedCell;
-		state->currentMode = Expr;
-	}
 }
 
 // ===============
@@ -140,21 +162,9 @@ void EditMode::handleTextInput(SDL_Renderer* renderer, SDL_Event* e, ProgramStat
 void ViewMode::handleKeydownEvent(SDL_Renderer* renderer, SDL_Event* e, ProgramState* state)
 {
 	switch (e->key.keysym.scancode) {
-		case SDL_SCANCODE_RETURN:
-
-		if (state->selectedCell->formula != "") {
-			state->selectedCell->content = state->selectedCell->formula;
-			state->selectedCell->updateContentTexture(renderer, state->font, state->fontColor, state->cellPadding);
-		}
-
-		if (state->selectedCell->content[0] == '\0') {
-			state->moveCaretToStartOfSelectedCell();
-		}
-		else {
-			state->moveCaretToEndOfSelectedCellText();
-		}
-		state->currentMode = Edit;
-		break;
+	case SDL_SCANCODE_RETURN:
+		state->switchMode(renderer, Edit);
+	break;
 	case SDL_SCANCODE_DELETE:
 		state->selectedCell->content = "";
 		state->selectedCell->updateContentTexture(renderer, state->font, state->fontColor, state->cellPadding);
@@ -179,7 +189,7 @@ void ViewMode::handleTextInput(SDL_Renderer* renderer, SDL_Event* e, ProgramStat
 		state->selectedCell->content = *e->text.text;
 		state->selectedCell->updateContentTexture(renderer, state->font, state->fontColor, state->cellPadding);
 		state->moveCaretToEndOfSelectedCellText();
-		state->currentMode = Edit;
+		state->switchMode(renderer, Edit);
 	}
 	else {
 		printf("Input is too big!\n");
@@ -188,7 +198,7 @@ void ViewMode::handleTextInput(SDL_Renderer* renderer, SDL_Event* e, ProgramStat
 	if (state->selectedCell->content[0] == '=') {
 		state->subjectInsertPos = 1;
 		state->subjectCell = state->selectedCell;
-		state->currentMode = Expr;
+		state->switchMode(renderer, Expr);
 	}
 }
 
@@ -221,6 +231,18 @@ void ViewMode::navigate(SDL_Renderer* renderer, Direction direction, ProgramStat
 // == EXPR MODE ==
 // ===============
 
+void ExprMode::onSwitchTo(SDL_Renderer* renderer, ProgramState* state) {
+	//evaluate(state->selectedCell, state->cells, state->columns);
+	//
+	//if(state->subjectCell != NULL)
+	//	evaluate(state->subjectCell, state->cells, state->columns);
+//
+	//if (state->selectedCell->formula != "") {
+	//	selectedCellContent = state->selectedCell->formula;
+	//	state->selectedCell->updateContentTexture(renderer, state->font, state->fontColor, state->cellPadding);
+	//}
+}
+
 void ExprMode::addOperator(SDL_Renderer* renderer, char sign, ProgramState* state) {
 	state->subjectCell->content += sign;
 	state->subjectInsertPos=state->subjectCell->content.length();
@@ -251,11 +273,12 @@ void ExprMode::handleKeydownEvent(SDL_Renderer* renderer, SDL_Event* e, ProgramS
 	switch (e->key.keysym.scancode) {
 	case SDL_SCANCODE_ESCAPE:
 	case SDL_SCANCODE_RETURN:
-		evaluate(state->subjectCell, state->cells, state->columns);
-		state->subjectCell->updateContentTexture(renderer, state->font, state->fontColor, state->cellPadding);
-		state->currentMode = View;
+		if(evaluate(state->subjectCell, state->cells, state->columns))
+			state->subjectCell->updateContentTexture(renderer, state->font, state->fontColor, state->cellPadding);
+
 		state->subjectCell = NULL;
 		state->subjectInsertPos = 1;
+		state->switchMode(renderer, View);
 		break;
 	case SDL_SCANCODE_DOWN:
 		navigate(renderer, Direction::Down, state);
@@ -282,19 +305,3 @@ void ExprMode::handleKeydownEvent(SDL_Renderer* renderer, SDL_Event* e, ProgramS
 	}
 
 }
-
-void ExprMode::handleMouseButtonDown(SDL_Renderer* renderer, SDL_Event* e, ProgramState* state) {
-	switch (e->button.button) {
-	case SDL_BUTTON_LEFT:
-		break;
-
-	case SDL_BUTTON_RIGHT:
-		break;
-
-	case SDL_BUTTON_MIDDLE:
-		break;
-	}
-
-}
-
-void ExprMode::handleTextInput(SDL_Renderer* renderer, SDL_Event* e, ProgramState* state) {}

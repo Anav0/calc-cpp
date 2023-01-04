@@ -5,4 +5,4 @@
 #include "Base.h"
 #include "tinyexpr.h"
 
-void evaluate(Cell*, const std::vector<Cell>&, const std::vector<Column>&);
+bool evaluate(Cell*, const std::vector<Cell>&, const std::vector<Column>&);
