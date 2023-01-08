@@ -162,7 +162,9 @@ void update_rows(SDL_Renderer* renderer) {
 		row.content = s;
 		SDL_Surface* text = TTF_RenderText_Blended(STATE.font, s.c_str(), STATE.fontColor);
 
-		row.textRect = { rect.x + ((row.rect.w - text->w) / 2), rect.y + ((row.rect.h - text->h) / 2), text->w, text->h };
+		row.textRect.w = text->w;
+		row.textRect.h = text->h;
+		center(&row.rect, &row.textRect);
 
 		row.textTexture = SDL_CreateTextureFromSurface(renderer, text);
 
@@ -194,7 +196,10 @@ void update_columns(SDL_Renderer* renderer) {
 		col.content = s;
 		SDL_Surface* text = TTF_RenderText_Blended(STATE.font, s.c_str(), STATE.fontColor);
 
-		col.textRect = { rect.x + ((col.rect.w - text->w) / 2), rect.y + ((col.rect.h - text->h) / 2), text->w, text->h };
+		col.textRect.w = text->w;
+		col.textRect.h = text->h;
+		center(&col.rect, &col.textRect);
+		
 		col.textTexture = SDL_CreateTextureFromSurface(renderer, text);
 
 		x += STATE.colWidth;

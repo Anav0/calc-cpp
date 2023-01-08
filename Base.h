@@ -6,6 +6,8 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
 
+#include "Align.h"
+
 #define MAX_TEXT_LEN 256
 
 enum ModeType {

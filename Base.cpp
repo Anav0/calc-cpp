@@ -9,6 +9,9 @@ void Cell::updateContentTexture(SDL_Renderer* renderer, TTF_Font* font, SDL_Colo
 		return;
 	}
 
-	contentRect = { rect.x + padding[0], rect.y + padding[2] + ((rect.h - text->h) / 2), text->w, text->h };
+	contentRect.h = text->h;
+	contentRect.w = text->w;
+
+	left(&rect, &contentRect, padding);
 	contentTexture = SDL_CreateTextureFromSurface(renderer, text);
 }

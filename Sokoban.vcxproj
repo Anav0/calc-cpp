@@ -141,6 +141,7 @@
     <ClCompile Include="tinyexpr.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Align.h" />
     <ClInclude Include="Base.h" />
     <ClInclude Include="Eval.h" />
     <ClInclude Include="Mode.h" />
