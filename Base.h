@@ -27,6 +27,12 @@ enum CaretType {
 	Vertical
 };
 
+enum CellError {
+	Ok,
+	SelfReference,
+	NaN,
+};
+
 struct Caret {
 	SDL_Rect rect;
 	SDL_Color color = { 45, 124, 238, 0xFF };
@@ -49,7 +55,11 @@ struct Cell {
 	int colIndex;
 	int rowIndex;
 
-	void updateContentTexture(SDL_Renderer*, TTF_Font*, SDL_Color, int[4]);
+	CellError Err = Ok;
+
+	void showErrorMessage(SDL_Renderer*, TTF_Font*, SDL_Color, int[4]);
+	void showFormula(SDL_Renderer*, TTF_Font*, SDL_Color, int[4]);
+	void showEvaluation(SDL_Renderer*, TTF_Font*, SDL_Color, int[4]);
 };
 
 struct Column {
