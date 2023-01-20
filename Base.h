@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <unordered_set>
 #include <cassert>
 
 #include <SDL_rect.h>
@@ -56,6 +57,8 @@ struct Cell {
 	int rowIndex;
 
 	CellError Err = Ok;
+
+	std::unordered_set<Cell*> dependant_cells;
 
 	void showErrorMessage(SDL_Renderer*, TTF_Font*, SDL_Color, int[4]);
 	void showFormula(SDL_Renderer*, TTF_Font*, SDL_Color, int[4]);

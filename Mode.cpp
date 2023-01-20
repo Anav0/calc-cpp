@@ -89,14 +89,14 @@ void EditMode::handleKeydownEvent(SDL_Renderer *renderer, SDL_Event *e,
                                   ProgramState *state) {
   switch (e->key.keysym.scancode) {
   case SDL_SCANCODE_ESCAPE:
-	if(evaluate(state->selectedCell, state->cells, state->columns))
+	if(state->evaluate(renderer, state->selectedCell))
 		state->selectedCell->showEvaluation(renderer, state->font, state->fontColor, state->cellPadding);
 	else
 		state->selectedCell->showErrorMessage(renderer, state->font, state->fontColor, state->cellPadding);
     state->switchMode(renderer, View);
     break;
   case SDL_SCANCODE_RETURN:
-	  if(evaluate(state->selectedCell, state->cells, state->columns))
+	  if(state->evaluate(renderer, state->selectedCell))
 		  state->selectedCell->showEvaluation(renderer, state->font, state->fontColor, state->cellPadding);
 	else
 		state->selectedCell->showErrorMessage(renderer, state->font, state->fontColor, state->cellPadding);
@@ -298,7 +298,7 @@ void ExprMode::handleKeydownEvent(SDL_Renderer *renderer, SDL_Event *e,
   case SDL_SCANCODE_ESCAPE:
   case SDL_SCANCODE_RETURN:
 	
-	if(evaluate(state->subjectCell, state->cells, state->columns))
+	if(state->evaluate(renderer, state->subjectCell))
 		state->subjectCell->showEvaluation(renderer, state->font, state->fontColor, state->cellPadding);
 	else
 		state->subjectCell->showErrorMessage(renderer, state->font, state->fontColor, state->cellPadding);
