@@ -10,6 +10,7 @@
 #include "Align.h"
 
 #define MAX_TEXT_LEN 256
+#define MAX_CHANGES 100
 
 enum ModeType {
 	View,

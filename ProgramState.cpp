@@ -191,4 +191,16 @@ bool ProgramState::evaluate(SDL_Renderer* renderer, Cell* cell) {
 
 void ProgramState::reset() {
 	selectedCell = &cells[0];
+	
+	while (!changes.queque.empty())
+		changes.queque.pop_back();
+}
+
+void ProgramState::recordCellChange()
+{
+	if (changes.queque.size() >= MAX_CHANGES)
+		changes.queque.pop_back();
+
+	CellChange* cellChange = new CellChange(*selectedCell);
+	changes.queque.push_front(cellChange);
 }
