@@ -4,16 +4,20 @@
 #include <stdbool.h>
 #include <vector>
 #include <cassert>
+#include <string>
 
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
-#include <string>
+
+#include "glad/glad.h"
 
 #include "Base.h"
 #include "ProgramState.h"
 
 static ProgramState STATE{};
+
+SDL_GLContext ctx;
 
 bool init(SDL_Window** window, SDL_Renderer** renderer)
 {
@@ -30,13 +34,25 @@ bool init(SDL_Window** window, SDL_Renderer** renderer)
 		return false;
 	}
 
-	Uint32 windowFlags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE;
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+
+	Uint32 windowFlags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI;
 	*window = SDL_CreateWindow("Sokoban", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, STATE.screenWidth, STATE.screenHeight, windowFlags);
+
 	if (!window)
 	{
 		printf("Window could not be created!\n" "SDL_Error: %s\n", SDL_GetError());
 		return false;
 	}
+
+	ctx = SDL_GL_CreateContext(*window);
+
+	gladLoadGLLoader(SDL_GL_GetProcAddress);
+
 	*renderer = SDL_CreateRenderer(*window, -1, SDL_RENDERER_ACCELERATED);
 	if (!renderer)
 	{
@@ -73,9 +89,11 @@ SDL_Texture* loadTexture(SDL_Renderer* renderer, const char* path, int* w, int* 
 	return imageTexture;
 }
 
-void render(SDL_Renderer* renderer) {
+void render(SDL_Renderer* renderer, SDL_Window* window) {
 	SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
 	SDL_RenderClear(renderer);
+	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
 	SDL_Color modeColor = STATE.getCurrentMode()->color;
 
@@ -140,6 +158,8 @@ void render(SDL_Renderer* renderer) {
 		SDL_RenderFillRect(renderer, &STATE.caret.rect);
 	}
 
+	// At the end of the loop
+	SDL_GL_SwapWindow(window);
 
 	SDL_RenderPresent(renderer);
 }
@@ -202,7 +222,7 @@ void update_columns(SDL_Renderer* renderer) {
 		col.textRect.w = text->w;
 		col.textRect.h = text->h;
 		center(&col.rect, &col.textRect);
-		
+
 		col.textTexture = SDL_CreateTextureFromSurface(renderer, text);
 
 		x += STATE.colWidth;
@@ -222,7 +242,7 @@ void update_cells() {
 	uint16_t i = 0;
 	int cellsInRow = 0;
 	int observedNumberOfRows = 0;
-	int rowIndex    = 0;
+	int rowIndex = 0;
 	int columnIndex = 0;
 	while (true)
 	{
@@ -277,7 +297,7 @@ void update(SDL_Renderer* renderer) {
 void handleEvents(SDL_Renderer* renderer) {
 	SDL_Event e;
 
-	SDL_WaitEvent(&e);
+	SDL_PollEvent(&e);
 
 	Mode* currentMode = STATE.getCurrentMode();
 	currentMode->handleEvents(renderer, &e, &STATE);
@@ -298,6 +318,8 @@ int main(int argc, char* argv[])
 
 	STATE.selectedCell = &STATE.cells[0];
 
+	glViewport(0, 0, STATE.screenWidth, STATE.screenHeight);
+
 	while (!STATE.shouldQuit)
 	{
 		handleEvents(renderer);
@@ -308,7 +330,8 @@ int main(int argc, char* argv[])
 			STATE.shouldUpdate = false;
 		}
 
-		render(renderer);
+		render(renderer, window);
+
 	}
 
 	SDL_DestroyRenderer(renderer);
