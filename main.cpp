@@ -68,9 +68,7 @@ static std::vector<Column> COLUMNS;
 static std::vector<Row> ROWS;
 static SDL_Color FONT_COLOR = { 0, 0, 0, 0 };
 
-//char usersInput[MAX_TEXT_LEN];
 Sint32 cursor;
-Sint32 inputLength;
 
 Cell* SELECTED_CELL;
 
@@ -158,7 +156,10 @@ void render(SDL_Renderer* renderer) {
 		}
 
 		if (SELECTED_CELL == &cell) {
-			SDL_SetRenderDrawColor(renderer, 203, 38, 6, 0xFF);
+			if(CURRENT_MODE == Edit)
+				SDL_SetRenderDrawColor(renderer, 255, 188, 71, 0xFF);
+			else
+				SDL_SetRenderDrawColor(renderer, 38, 87, 82, 0xFF);
 		}
 
 		SDL_RenderDrawRect(renderer, &cell.rect);
@@ -342,22 +343,34 @@ void navigate(SDL_Renderer* renderer, Direction direction) {
 
 void handleKeydown(SDL_Renderer* renderer, SDL_Event* e) {
 	switch (e->key.keysym.scancode) {
+	case SDL_SCANCODE_ESCAPE:
+		printf("View!\n");
+		CURRENT_MODE = View;
+		break;
+	case SDL_SCANCODE_RETURN:
+		printf("Edit!\n");
+		CURRENT_MODE = Edit;
+		break;
 	case SDLK_BACKSPACE:
 		if (SELECTED_CELL == NULL || SELECTED_CELL->content == "") return;
 		SELECTED_CELL->content[strlen(SELECTED_CELL->content) - 1] = '\0';
 		updateCellContentTexture(renderer, SELECTED_CELL);
 		break;
 	case SDL_SCANCODE_DOWN:
-		navigate(renderer, Direction::Down);
+		if(CURRENT_MODE == View)
+			navigate(renderer, Direction::Down);
 		break;
 	case SDL_SCANCODE_UP:
-		navigate(renderer, Direction::Up);
+		if(CURRENT_MODE == View) 
+			navigate(renderer, Direction::Up);
 		break;
 	case SDL_SCANCODE_LEFT:
-		navigate(renderer, Direction::Left);
+		if(CURRENT_MODE == View) 
+			navigate(renderer, Direction::Left);
 		break;
 	case SDL_SCANCODE_RIGHT:
-		navigate(renderer, Direction::Right);
+		if(CURRENT_MODE == View)
+			navigate(renderer, Direction::Right);
 		break;
 	}
 }
@@ -454,6 +467,8 @@ int main(int argc, char* argv[])
 	SDL_StartTextInput();
 
 	update(renderer);
+
+	SELECTED_CELL = &CELLS[0];
 
 	while (!SHOULD_QUIT)
 	{
