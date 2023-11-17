@@ -43,6 +43,8 @@ public:
 	Cell* selectedCell;
 	Cell* subjectCell;
 
+	int subjectInsertPos;
+
 	std::vector<Cell>   cells;
 	std::vector<Column> columns;
 	std::vector<Row>    rows;
