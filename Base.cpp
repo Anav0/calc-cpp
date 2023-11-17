@@ -2,7 +2,6 @@
 
 void Cell::updateContent(SDL_Renderer* renderer, TTF_Font* font, SDL_Color color, int padding[4], std::string* newContent) {
 
-	if (*newContent == "") return;
 	//Note(Igor): Rendering text like this is hugely inefficient. We allocate whenever text changes
 	SDL_Surface* text = TTF_RenderText_Blended(font, newContent->c_str(), color);
 

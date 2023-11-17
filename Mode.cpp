@@ -139,6 +139,7 @@ void EditMode::handleKeydownEvent(SDL_Renderer* renderer, SDL_Event* e,
 
 		state->selectedCell->showEvaluation(
 			renderer, state->font, state->fontColor, state->cellPadding);
+
 		break;
 	case SDL_SCANCODE_DOWN:
 		if (state->selectedCell->content[0] == '=')
