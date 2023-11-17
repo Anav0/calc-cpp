@@ -66,6 +66,7 @@ bool Gui::drawInput(int id, SDL_Color color, std::string* content, int padding[4
 
 	if (isActive && Gui::lastEvent->type == SDL_TEXTINPUT) {
 		content->insert(Gui::caretPos, Gui::lastEvent->text.text);
+		Gui::caretPos += 1;
 		result = true;
 	}
 
