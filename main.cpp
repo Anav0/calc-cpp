@@ -83,6 +83,14 @@ void render(SDL_Renderer* renderer) {
 
 	SDL_Color modeColor = STATE.getCurrentMode()->color;
 
+	Gui::startGroup(0, 0, false, 10);
+	if (!STATE.selectedCell->formula.empty())
+		Gui::drawInput(1, STATE.fontColor, 30, STATE.selectedCell->formula);
+	else
+		Gui::drawInput(1, STATE.fontColor, 30, STATE.selectedCell->content);
+
+	Gui::endGroup();
+
 	for (const Cell& cell : STATE.cells)
 	{
 		SDL_SetRenderDrawColor(renderer, 192, 192, 192, 0xFF);
@@ -146,7 +154,7 @@ void render(SDL_Renderer* renderer) {
 
 	auto numberOfChanges = STATE.getNumberOfChanges();
 	if (numberOfChanges > 0) {
-		Gui::startGroup(50, STATE.screenHeight - 50, false, 10);
+		Gui::startGroup(0, STATE.screenHeight - 50, false, 5);
 		Gui::drawText(STATE.fontColor, std::to_string(numberOfChanges) + " unsaved changes");
 		if (Gui::drawBtn(STATE.fontColor, "Save file")) {
 
@@ -158,7 +166,7 @@ void render(SDL_Renderer* renderer) {
 }
 
 void update_rows(SDL_Renderer* renderer) {
-	int y = STATE.colHeight;
+	int y = STATE.colHeight + STATE.headerHeight; //TODO(Igor): Render as part of UI container
 	bool exceededScreenHeight = false;
 
 	STATE.rows.clear();
@@ -205,7 +213,7 @@ void update_columns(SDL_Renderer* renderer) {
 		rect.w = STATE.colWidth;
 		rect.h = STATE.colHeight;
 		rect.x = x;
-		rect.y = 0;
+		rect.y = STATE.headerHeight; //TODO(Igor): Render columns as part of the UI container
 		col.rect = rect;
 
 		std::string s(1, char(65 + i));
@@ -228,7 +236,8 @@ void update_columns(SDL_Renderer* renderer) {
 }
 
 void update_cells() {
-	int y = STATE.colHeight, x = STATE.rowWidth;
+	//TODO(Igor): render cells as part of a UI container. For now hardcode header clearance
+	int y = STATE.colHeight + STATE.headerHeight, x = STATE.rowWidth;
 	bool screenIsFilled = false;
 	STATE.cells.clear();
 

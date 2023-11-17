@@ -4,6 +4,7 @@ SDL_Renderer* Gui::renderer;
 TTF_Font* Gui::defaultFont;
 SDL_Point Gui::mousePos;
 bool Gui::clicked;
+int Gui::activeElementId;
 UiGroup Gui::currentGroup;
 
 void Gui::init(SDL_Renderer* renderer, TTF_Font* font)
@@ -45,6 +46,68 @@ void Gui::drawText(SDL_Color color, std::string content, TTF_Font* font)
 	SDL_RenderCopy(Gui::renderer, texture, NULL, &contentRect);
 
 	Gui::currentGroup.children.push_back(containerRect);
+}
+
+void Gui::drawInput(int id, SDL_Color color, int height, std::string content) {
+
+	int x, y;
+	Gui::currentGroup.getLastXandY(&x, &y);
+
+	SDL_Surface* text = TTF_RenderText_Blended(Gui::defaultFont, content.c_str(), color);
+
+	SDL_Rect inputRect{};
+	SDL_Rect contentRect{};
+
+	inputRect.x = x;
+	inputRect.y = y;
+
+	if (height > 0)
+		inputRect.h = height;
+	else
+	inputRect.h = text->h + 10;
+
+	if (!content.empty()) {
+	inputRect.w = text->w + 10;
+
+	contentRect.h = text->h;
+	contentRect.w = text->w;
+	}
+
+	centerY(&inputRect, &contentRect);
+	left2(&inputRect, &contentRect, 10);
+
+	auto texture = SDL_CreateTextureFromSurface(Gui::renderer, text);
+	auto isActive = Gui::activeElementId == id;
+
+	if (!isActive && SDL_PointInRect(&Gui::mousePos, &inputRect))
+		SDL_SetRenderDrawColor(Gui::renderer, 79, 177, 206, 1); //Blue
+	else
+		SDL_SetRenderDrawColor(Gui::renderer, 136, 136, 136, 1); //Grey
+
+	if (isActive) {
+		SDL_SetRenderDrawColor(Gui::renderer, 255, 71, 61, 1); //Light red
+
+		drawCursor(inputRect.x + 10, inputRect.y / 2, inputRect.h, 3, color);
+	}
+
+	//Render cursor
+	SDL_RenderDrawRect(renderer, &inputRect);
+	SDL_RenderCopy(Gui::renderer, texture, NULL, &contentRect);
+
+	Gui::currentGroup.children.push_back(inputRect);
+
+	if (Gui::clicked && SDL_PointInRect(&Gui::mousePos, &inputRect)) {
+		Gui::activeElementId = id;
+	}
+}
+
+void Gui::drawCursor(int x, int y, int height, int thickness, SDL_Color color) {
+	SDL_Rect caretRect{};
+	caretRect.x = x;
+	caretRect.y = y;
+
+	SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+	SDL_RenderFillRect(renderer, &caretRect);
 }
 
 bool Gui::drawBtn(SDL_Color color, std::string content)
@@ -95,6 +158,7 @@ void Gui::events(SDL_Event* e)
 		break;
 
 	case SDL_MOUSEBUTTONDOWN:
+		Gui::activeElementId = -1;
 		Gui::clicked = true;
 		break;
 	}

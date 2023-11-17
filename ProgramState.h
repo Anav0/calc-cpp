@@ -34,9 +34,10 @@ public:
 
 	int cellPadding[4] = { 10, 10, 0, 0 }; // L R T B
 
+	int headerHeight = 30;
+
 	SDL_Point mousePos;
 
-	Sint32 cursor;
 	TTF_Font* font;
 
 	SDL_Color fontColor = { 0, 0, 0, 0 };

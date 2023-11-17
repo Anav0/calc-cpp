@@ -160,10 +160,9 @@ void EditMode::handleMouseButtonDown(SDL_Renderer* renderer, SDL_Event* e,
 	state->switchMode(renderer, View);
 }
 
-void EditMode::handleTextInput(SDL_Renderer* renderer, SDL_Event* e,
-	ProgramState* state) {
-	if (state->selectedCell->content.length() + SDL_strlen(e->text.text) <
-		MAX_TEXT_LEN) {
+void EditMode::handleTextInput(SDL_Renderer* renderer, SDL_Event* e, ProgramState* state) {
+
+	if (state->selectedCell->content.length() + SDL_strlen(e->text.text) < MAX_TEXT_LEN) {
 
 		state->selectedCell->content += *e->text.text;
 
@@ -173,7 +172,7 @@ void EditMode::handleTextInput(SDL_Renderer* renderer, SDL_Event* e,
 			renderer, state->font, state->fontColor, state->cellPadding);
 	}
 	else {
-		printf("Input is too big!\n");
+		printf("Input is too long!\n");
 	}
 }
 

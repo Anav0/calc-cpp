@@ -5,7 +5,9 @@
 
 #include <string>
 #include "Align.h"
+
 #include <vector>
+#include <string>
 
 struct UiGroup {
 	int x, y, gaps;
@@ -76,13 +78,19 @@ private:
 	Gui() {};
 
 public:
+	static int activeElementId;
+
 	static void init(SDL_Renderer*, TTF_Font*);
 	static void endOfLoop();
-	static void drawText(SDL_Color, std::string, TTF_Font*);
-	static void drawText(SDL_Color, std::string);
-	static bool drawBtn(SDL_Color, std::string);
-	static void events(SDL_Event*);
 
 	static void startGroup(int x, int y, bool isVertical, int gaps);
 	static void endGroup();
+
+	static void drawText(SDL_Color, std::string, TTF_Font*);
+	static void drawText(SDL_Color, std::string);
+	static bool drawBtn(SDL_Color, std::string);
+	static void drawInput(int id, SDL_Color, int, std::string);
+	static void drawCursor(int x, int y, int height, int thickness, SDL_Color color);
+
+	static void events(SDL_Event*);
 };
