@@ -1,3 +1,6 @@
+17:07 - 23.01.2023
+	[] - Zaimplementować kolejkę zmian
+
 20:40 - 20.01.2023
 	[x] Resetuj zaznaczanie kolumn i wierszy w momencie zmiany rozmiaru oka
 

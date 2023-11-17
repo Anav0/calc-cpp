@@ -134,8 +134,8 @@ bool ProgramState::evaluate(SDL_Renderer* renderer, Cell* cell) {
 
 	while (haveCellPosToReplace) {
 		std::string exprCopy = expr;
-		auto regexIterStart = std::sregex_iterator(exprCopy.begin(), exprCopy.end(), labelsRgx);
-		auto regexIterEnd = std::sregex_iterator();
+		auto regexIterStart  = std::sregex_iterator(exprCopy.begin(), exprCopy.end(), labelsRgx);
+		auto regexIterEnd    = std::sregex_iterator();
 
 		haveCellPosToReplace = false;
 		for (std::sregex_iterator i = regexIterStart; i != regexIterEnd; ++i) {
