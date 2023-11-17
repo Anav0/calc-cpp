@@ -5,29 +5,29 @@
 void Mode::handleEvents(SDL_Renderer* renderer, SDL_Event* e, ProgramState* state)
 {
 	switch (e->type) {
-		case SDL_QUIT:
-			state->shouldQuit = true;
-			break;
+	case SDL_QUIT:
+		state->shouldQuit = true;
+		break;
 
-		case SDL_KEYDOWN:
-			handleKeydownEvent(renderer, e, state);
-			break;
+	case SDL_KEYDOWN:
+		handleKeydownEvent(renderer, e, state);
+		break;
 
-		case SDL_TEXTINPUT:
-			handleTextInput(renderer, e, state);
-			break;
+	case SDL_TEXTINPUT:
+		handleTextInput(renderer, e, state);
+		break;
 
-		case SDL_MOUSEMOTION:
-			handleMouseMotion(renderer, e, state);
-			break;
+	case SDL_MOUSEMOTION:
+		handleMouseMotion(renderer, e, state);
+		break;
 
-		case SDL_MOUSEBUTTONDOWN:
-			handleMouseButtonDown(renderer, e, state);
-			break;
+	case SDL_MOUSEBUTTONDOWN:
+		handleMouseButtonDown(renderer, e, state);
+		break;
 
-		case SDL_WINDOWEVENT:
-			handleWindowEvent(renderer, e, state);
-			break;
+	case SDL_WINDOWEVENT:
+		handleWindowEvent(renderer, e, state);
+		break;
 	}
 }
 
@@ -38,12 +38,12 @@ void Mode::handleMouseMotion(SDL_Renderer* renderer, SDL_Event* e, ProgramState*
 
 void Mode::handleWindowEvent(SDL_Renderer* renderer, SDL_Event* e, ProgramState* state) {
 	switch (e->window.event) {
-		case SDL_WINDOWEVENT_RESIZED:
-			SDL_Log("Window %d resized to %dx%d", e->window.windowID, e->window.data1, e->window.data2);
-			state->screenWidth = e->window.data1;
-			state->screenHeight = e->window.data2;
+	case SDL_WINDOWEVENT_RESIZED:
+		SDL_Log("Window %d resized to %dx%d", e->window.windowID, e->window.data1, e->window.data2);
+		state->screenWidth = e->window.data1;
+		state->screenHeight = e->window.data2;
 
-			state->shouldUpdate = true;
+		state->shouldUpdate = true;
 	}
 }
 
@@ -54,32 +54,38 @@ void Mode::handleWindowEvent(SDL_Renderer* renderer, SDL_Event* e, ProgramState*
 void EditMode::handleKeydownEvent(SDL_Renderer* renderer, SDL_Event* e, ProgramState* state)
 {
 	switch (e->key.keysym.scancode) {
-		case SDL_SCANCODE_ESCAPE:
-			state->currentMode = View;
-			break;
-		case SDL_SCANCODE_RETURN:
-			state->currentMode = View;
-			break;
-		case SDLK_BACKSPACE:
-			state->selectedCell->content[strlen(state->selectedCell->content) - 1] = '\0';
-			updateCellContentTexture(renderer, state->FONT, state->fontColor, state->selectedCell);
-			break;
-		case SDL_SCANCODE_DOWN:
-			break;
-		case SDL_SCANCODE_UP:
-			break;
-		case SDL_SCANCODE_LEFT:
-			break;
-		case SDL_SCANCODE_RIGHT:
-			break;
+	case SDL_SCANCODE_ESCAPE:
+		state->currentMode = View;
+		break;
+	case SDL_SCANCODE_RETURN:
+		state->currentMode = View;
+		break;
+	case SDLK_BACKSPACE:
+		state->selectedCell->content[strlen(state->selectedCell->content) - 1] = '\0';
+		updateCellContentTexture(renderer, state->FONT, state->fontColor, state->selectedCell);
+
+		if (state->caret.pos > strlen(state->selectedCell->content))
+			state->moveCaret(strlen(state->selectedCell->content));
+
+		break;
+	case SDL_SCANCODE_DOWN:
+		break;
+	case SDL_SCANCODE_UP:
+		break;
+	case SDL_SCANCODE_LEFT:
+		state->moveCaret(state->caret.pos - 1);
+		break;
+	case SDL_SCANCODE_RIGHT:
+		state->moveCaret(state->caret.pos + 1);
+		break;
 	}
 }
 
-void EditMode::handleMouseButtonDown(SDL_Renderer* renderer, SDL_Event* e, ProgramState* state){
+void EditMode::handleMouseButtonDown(SDL_Renderer* renderer, SDL_Event* e, ProgramState* state) {
 	state->currentMode = View;
 }
 
-void EditMode::handleTextInput(SDL_Renderer* renderer, SDL_Event* e, ProgramState* state){
+void EditMode::handleTextInput(SDL_Renderer* renderer, SDL_Event* e, ProgramState* state) {
 	if (state->selectedCell != NULL) {
 		if (SDL_strlen(state->selectedCell->content) + SDL_strlen(e->text.text) < MAX_TEXT_LEN) {
 			SDL_strlcat(state->selectedCell->content, e->text.text, sizeof(state->selectedCell->content));
@@ -100,6 +106,12 @@ void ViewMode::handleKeydownEvent(SDL_Renderer* renderer, SDL_Event* e, ProgramS
 {
 	switch (e->key.keysym.scancode) {
 	case SDL_SCANCODE_RETURN:
+		if (state->selectedCell->content[0] == '\0') {
+			state->moveCaretToStartOfSelectedCell();
+		}
+		else {
+			state->moveCaret(0);
+		}
 		state->currentMode = Edit;
 		break;
 	case SDL_SCANCODE_DOWN:
@@ -120,30 +132,30 @@ void ViewMode::handleKeydownEvent(SDL_Renderer* renderer, SDL_Event* e, ProgramS
 
 void ViewMode::handleMouseButtonDown(SDL_Renderer* renderer, SDL_Event* e, ProgramState* state) {
 	switch (e->button.button) {
-		case SDL_BUTTON_LEFT:
-			SDL_StopTextInput();
+	case SDL_BUTTON_LEFT:
+		SDL_StopTextInput();
 
-			for (Cell& cell : state->cells) {
-				if (SDL_PointInRect(&state->mousePos, &cell.rect)) {
-					state->selectedCell = &cell;
-					SDL_StartTextInput();
-					SDL_SetTextInputRect(&cell.rect);
-				}
+		for (Cell& cell : state->cells) {
+			if (SDL_PointInRect(&state->mousePos, &cell.rect)) {
+				state->selectedCell = &cell;
+				SDL_StartTextInput();
+				SDL_SetTextInputRect(&cell.rect);
 			}
-			break;
+		}
+		break;
 
-		case SDL_BUTTON_RIGHT:
-			break;
+	case SDL_BUTTON_RIGHT:
+		break;
 
-		case SDL_BUTTON_MIDDLE:
-			break;
+	case SDL_BUTTON_MIDDLE:
+		break;
 	}
 
 }
 
 
 
-void ViewMode::handleTextInput(SDL_Renderer* renderer, SDL_Event* e, ProgramState* state){}
+void ViewMode::handleTextInput(SDL_Renderer* renderer, SDL_Event* e, ProgramState* state) {}
 
 Cell* ViewMode::getCellToThe(Cell* cell, Direction direction, ProgramState* state) {
 	int numberOfColumns = state->columns.size();

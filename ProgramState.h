@@ -32,6 +32,8 @@ public:
 	SDL_Color fontColor = { 0, 0, 0, 0 };
 	TTF_Font* FONT;
 
+	Caret caret;
+
 	Cell* selectedCell;
 	std::vector<Cell>   cells;
 	std::vector<Column> columns;
@@ -40,7 +42,16 @@ public:
 	ProgramState() {
 		_modes.push_back(new EditMode());
 		_modes.push_back(new ViewMode());
+
+		SDL_Rect caretRect{};
+		caretRect.x = 0;
+		caretRect.y = 0;
+		caretRect.w = 2;
+		caretRect.h = colHeight * 0.80;
+		caret.rect = caretRect;
 	}
 
 	Mode* getCurrentMode();
+	void moveCaret(int pos);
+	void moveCaretToStartOfSelectedCell();
 };

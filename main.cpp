@@ -49,7 +49,7 @@ bool init(SDL_Window** window, SDL_Renderer** renderer)
 		printf("Error initializing SDL_ttf: %s", TTF_GetError());
 	}
 
-	const char* font_path = "./assets/fonts/Lato-Regular.ttf";
+	const char* font_path = "./assets/fonts/Poppins-Regular.ttf";
 	STATE.FONT = TTF_OpenFont(font_path, 14);
 
 	if (!STATE.FONT) {
@@ -116,6 +116,12 @@ void render(SDL_Renderer* renderer) {
 
 		SDL_RenderCopy(renderer, row.textTexture, NULL, &row.textRect);
 	}
+
+	if (STATE.currentMode == Edit) {
+		SDL_SetRenderDrawColor(renderer, STATE.caret.color.r,STATE.caret.color.g,STATE.caret.color.b, STATE.caret.color.a);
+		SDL_RenderFillRect(renderer, &STATE.caret.rect);
+	}
+	
 
 	SDL_RenderPresent(renderer);
 }
@@ -226,7 +232,6 @@ void handleEvents(SDL_Renderer* renderer) {
 	Mode* currentMode = STATE.getCurrentMode();
 	currentMode->handleEvents(renderer, &e, &STATE);
 }
-
 
 int main(int argc, char* argv[])
 {

@@ -18,6 +18,20 @@ enum Direction {
 	Down
 };
 
+enum CaretType {
+	Vertical
+};
+
+struct Caret {
+	SDL_Rect rect;
+	SDL_Color color = { 45, 124, 238, 0xFF };
+
+	uint8_t frequency;
+	uint16_t pos;
+
+	CaretType type;
+};
+
 struct Cell {
 	SDL_Rect rect;
 
