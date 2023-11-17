@@ -1,5 +1,7 @@
 22:00 - 03.01.2023
 	[] Padding dla komórek
-	[] Zaznaczanie kolumn i wierszy kolorem gdy komórka jest zaznaczona
+	[x] Zaznaczanie kolumn i wierszy kolorem gdy komórka jest zaznaczona
 	[] Usuwanie ref. do komórek powinno usuwać cały symbol np. A1 po usunięciu 1 powinno zniknąć
 	[] Zaznaczanie kolorami używanych w wyrazeniu komórek
+	[] Ustawienia powinny być pobierane z pliku
+	[] Del powinien czyścić komórkę

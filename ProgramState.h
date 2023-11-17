@@ -33,10 +33,12 @@ public:
 	Sint32 cursor;
 	TTF_Font* font;
 
-	SDL_Color fontColor     = { 0, 0, 0, 0 };
-	SDL_Color subjectColor  = {255, 188, 71, 0};
-	SDL_Color selectedColor = {38, 87, 82, 0};
-	SDL_Color hoverColor    = {38, 87, 82, 0};
+	SDL_Color fontColor           = { 0, 0, 0, 0 };
+	SDL_Color subjectColor        = {255, 188, 71, 0};
+	SDL_Color selectedColor       = {38, 87, 82, 0};
+	SDL_Color hoverColor          = {38, 87, 82, 0};
+	SDL_Color activeColumnColor   = {255,206,69, 0};
+	SDL_Color activeRowColor      = {255,206,69, 0};
 
 	Caret caret;
 

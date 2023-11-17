@@ -77,14 +77,17 @@ void render(SDL_Renderer* renderer) {
 	SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
 	SDL_RenderClear(renderer);
 
+	// Sloooooow
+	std::string activeCellLabel = STATE.getCellPosLabel(STATE.selectedCell);
+
 	for (const Cell& cell : STATE.cells)
 	{
 		SDL_SetRenderDrawColor(renderer, 192, 192, 192, 0xFF);
 
 		if (SDL_PointInRect(&STATE.mousePos, &cell.rect))
 			SDL_SetRenderDrawColor(renderer, STATE.hoverColor.r, STATE.hoverColor.g, STATE.hoverColor.b, STATE.hoverColor.a);
-		
-		if(STATE.subjectCell == &cell)
+
+		if (STATE.subjectCell == &cell)
 			SDL_SetRenderDrawColor(renderer, STATE.subjectColor.r, STATE.subjectColor.g, STATE.subjectColor.b, STATE.subjectColor.a);
 
 		if (STATE.selectedCell == &cell)
@@ -103,6 +106,12 @@ void render(SDL_Renderer* renderer) {
 		SDL_SetRenderDrawColor(renderer, 67, 66, 61, 0xFF);
 		SDL_RenderDrawRect(renderer, &column.rect);
 
+		// Note(Igor): this will not on columns like: AAA12
+		if (column.content[0] == activeCellLabel[0]) {
+			SDL_SetRenderDrawColor(renderer, STATE.activeColumnColor.r, STATE.activeColumnColor.g, STATE.activeColumnColor.b, STATE.activeColumnColor.a);
+			SDL_RenderFillRect(renderer, &column.rect);
+		}
+
 		SDL_RenderCopy(renderer, column.textTexture, NULL, &column.textRect);
 	}
 
@@ -113,14 +122,19 @@ void render(SDL_Renderer* renderer) {
 		SDL_SetRenderDrawColor(renderer, 67, 66, 61, 0xFF);
 		SDL_RenderDrawRect(renderer, &row.rect);
 
+		if (row.content == activeCellLabel.substr(1)) {
+			SDL_SetRenderDrawColor(renderer, STATE.activeRowColor.r, STATE.activeRowColor.g, STATE.activeRowColor.b, STATE.activeRowColor.a);
+			SDL_RenderFillRect(renderer, &row.rect);
+		}
+
 		SDL_RenderCopy(renderer, row.textTexture, NULL, &row.textRect);
 	}
 
 	if (STATE.currentMode == Edit) {
-		SDL_SetRenderDrawColor(renderer, STATE.caret.color.r,STATE.caret.color.g,STATE.caret.color.b, STATE.caret.color.a);
+		SDL_SetRenderDrawColor(renderer, STATE.caret.color.r, STATE.caret.color.g, STATE.caret.color.b, STATE.caret.color.a);
 		SDL_RenderFillRect(renderer, &STATE.caret.rect);
 	}
-	
+
 
 	SDL_RenderPresent(renderer);
 }
@@ -147,7 +161,7 @@ void update_rows(SDL_Renderer* renderer) {
 		SDL_Surface* text = TTF_RenderText_Blended(STATE.font, s.c_str(), STATE.fontColor);
 
 		row.textRect = { rect.x + ((row.rect.w - text->w) / 2), rect.y + ((row.rect.h - text->h) / 2), text->w, text->h };
-		
+
 		row.textTexture = SDL_CreateTextureFromSurface(renderer, text);
 
 		y += STATE.rowHeight;
@@ -205,7 +219,7 @@ void update_cells() {
 		cellRect.h = STATE.rowHeight;
 
 		Cell cell{};
-		
+
 		cell.index = i;
 
 		if (x >= STATE.screenWidth) {
