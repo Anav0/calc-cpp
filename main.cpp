@@ -92,6 +92,9 @@ void render(SDL_Renderer* renderer) {
 		if (STATE.selectedCell == &cell)
 			SDL_SetRenderDrawColor(renderer, modeColor.r, modeColor.g, modeColor.b, modeColor.a);
 
+		if (cell.Err != Ok)
+			SDL_SetRenderDrawColor(renderer, 229, 65, 51, 0); //Note(Igor): extract into config file
+
 		SDL_RenderDrawRect(renderer, &cell.rect);
 
 		if (cell.contentTexture != NULL)

@@ -2,8 +2,8 @@
 
 bool evaluate(Cell* cell, const std::vector<Cell>& cells, const std::vector<Column>& columns) {
 
-	if(cell->content.length() == 0 || cell->content[0] != '=')
-		return false;
+	if (cell->content.length() == 0 || cell->content[0] != '=')
+		return true;
 
 	std::string expr = cell->content;
 
@@ -23,7 +23,7 @@ bool evaluate(Cell* cell, const std::vector<Cell>& cells, const std::vector<Colu
 	while (haveCellPosToReplace) {
 		std::string exprCopy = expr;
 		auto regexIterStart = std::sregex_iterator(exprCopy.begin(), exprCopy.end(), labelsRgx);
-		auto regexIterEnd   = std::sregex_iterator();
+		auto regexIterEnd = std::sregex_iterator();
 
 		haveCellPosToReplace = false;
 		for (std::sregex_iterator i = regexIterStart; i != regexIterEnd; ++i) {
@@ -44,6 +44,12 @@ bool evaluate(Cell* cell, const std::vector<Cell>& cells, const std::vector<Colu
 
 			auto c = cells[cellIndex];
 
+			//Note(Igor): side effect
+			if (c.index == cell->index) {
+				cell->Err = SelfReference;
+				return false;
+			}
+
 			std::regex r(cellPos);
 			expr = std::regex_replace(expr, r, c.content); //Info(Igor): slooooow
 		}
@@ -54,10 +60,12 @@ bool evaluate(Cell* cell, const std::vector<Cell>& cells, const std::vector<Colu
 	cell->formula = cell->content;
 
 	if (err) {
-		cell->content = "Err";
-	} else {
-		cell->content = std::to_string(result);
+		cell->Err = NaN;
+		return false;
 	}
-
-	return true;
+	else {
+		cell->Err = Ok;
+		cell->content = std::to_string(result);
+		return true;
+	}
 }
