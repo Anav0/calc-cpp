@@ -5,9 +5,17 @@
 #include <SDL.h>
 #include <SDL_image.h>
 
-static int  SCREEN_WIDTH  = 1024;
-static int  SCREEN_HEIGHT = 720;
-static bool SHOULD_QUIT  = false;
+const int ROW_W = 40;
+const int ROW_H = 20;
+
+const int COL_W = 100;
+const int COL_H = 20;
+
+static int SCREEN_WIDTH = 1024;
+static int SCREEN_HEIGHT = 720;
+
+static bool SHOULD_QUIT = false;
+
 SDL_Point   MOUSE_POS;
 
 struct Cell {
@@ -15,7 +23,19 @@ struct Cell {
 	SDL_bool isSelected = SDL_FALSE;
 };
 
+struct Column {
+	SDL_Rect rect;
+	SDL_bool isSelected = SDL_FALSE;
+};
+
+struct Row {
+	SDL_Rect rect;
+	SDL_bool isSelected = SDL_FALSE;
+};
+
 static std::vector<Cell> CELLS;
+static std::vector<Column> COLUMNS;
+static std::vector<Row> ROWS;
 
 bool init(SDL_Window** window, SDL_Renderer** renderer)
 {
@@ -64,9 +84,53 @@ SDL_Texture* loadTexture(SDL_Renderer* renderer, const char* path, int* w, int* 
 	return imageTexture;
 }
 
+void update_rows() {
+	int y = COL_H;
+	bool exceededScreenHeight = false;
+	ROWS.clear();
+
+	while (!exceededScreenHeight) {
+		Row row{};
+
+		SDL_Rect rect{};
+		rect.w = ROW_W;
+		rect.h = ROW_H;
+		rect.x = 0;
+		rect.y = y;
+		row.rect = rect;
+
+		y += ROW_H;
+		exceededScreenHeight = (rect.y + ROW_H) > SCREEN_HEIGHT;
+
+		ROWS.push_back(row);
+	}
+}
+
+void update_columns() {
+	int x = ROW_W;
+	bool exceededScreenWidth = false;
+	COLUMNS.clear();
+
+	while (!exceededScreenWidth) {
+		Column col{};
+
+		SDL_Rect rect{};
+		rect.w = COL_W;
+		rect.h = COL_H;
+		rect.x = x;
+		rect.y = 0;
+		col.rect = rect;
+
+		x += COL_W;
+		exceededScreenWidth = (rect.x + COL_W) > SCREEN_WIDTH;
+
+		COLUMNS.push_back(col);
+	}
+
+}
+
 void update_cells() {
-	printf("UPDATE");
-	int y = 0, x = 0;
+	int y = COL_H, x = ROW_W;
 	bool screenIsNotFilled = true;
 	CELLS.clear();
 
@@ -79,7 +143,7 @@ void update_cells() {
 
 		if (cellRect.x > SCREEN_WIDTH) {
 			y += cellRect.h;
-			x = 0;
+			x = ROW_W;
 		}
 		else {
 			x += cellRect.w;
@@ -95,6 +159,12 @@ void update_cells() {
 	}
 }
 
+void update() {
+	update_cells();
+	update_rows();
+	update_cells();
+}
+
 void handleMouseMotion(SDL_Event* e) {
 	MOUSE_POS.x = e->motion.x;
 	MOUSE_POS.y = e->motion.y;
@@ -102,28 +172,28 @@ void handleMouseMotion(SDL_Event* e) {
 
 void handleMouseButtonDown(SDL_Event* e) {
 	switch (e->button.button) {
-		case SDL_BUTTON_LEFT:
-			for (Cell& cell : CELLS) {
-				cell.isSelected = SDL_PointInRect(&MOUSE_POS, &cell.rect);
-			}
-			break;
+	case SDL_BUTTON_LEFT:
+		for (Cell& cell : CELLS) {
+			cell.isSelected = SDL_PointInRect(&MOUSE_POS, &cell.rect);
+		}
+		break;
 
-		case SDL_BUTTON_RIGHT:
-			break;
+	case SDL_BUTTON_RIGHT:
+		break;
 
-		case SDL_BUTTON_MIDDLE:
-			break;
+	case SDL_BUTTON_MIDDLE:
+		break;
 	}
 
 }
 
 void handleWindowEvent(SDL_Event* e) {
 	switch (e->window.event) {
-		case SDL_WINDOWEVENT_RESIZED:
-			SDL_Log("Window %d resized to %dx%d", e->window.windowID, e->window.data1, e->window.data2);
-			SCREEN_WIDTH = e->window.data1;
-			SCREEN_HEIGHT= e->window.data2;
-			update_cells();
+	case SDL_WINDOWEVENT_RESIZED:
+		SDL_Log("Window %d resized to %dx%d", e->window.windowID, e->window.data1, e->window.data2);
+		SCREEN_WIDTH = e->window.data1;
+		SCREEN_HEIGHT = e->window.data2;
+		update();
 	}
 }
 
@@ -133,31 +203,31 @@ void handleEvents() {
 	SDL_WaitEvent(&e);
 
 	switch (e.type) {
-		case SDL_QUIT:
-			SHOULD_QUIT = true;
-			break;
+	case SDL_QUIT:
+		SHOULD_QUIT = true;
+		break;
 
-		case SDL_MOUSEMOTION:
-			handleMouseMotion(&e);
+	case SDL_MOUSEMOTION:
+		handleMouseMotion(&e);
 
-		case SDL_MOUSEBUTTONDOWN:
-			handleMouseButtonDown(&e);
+	case SDL_MOUSEBUTTONDOWN:
+		handleMouseButtonDown(&e);
 
-		case SDL_WINDOWEVENT:
-			handleWindowEvent(&e);
+	case SDL_WINDOWEVENT:
+		handleWindowEvent(&e);
 	}
 }
 
 int main(int argc, char* argv[])
 {
 	SDL_Renderer* renderer = 0;
-	SDL_Window*   window   = 0;
+	SDL_Window* window = 0;
 
 	if (!init(&window, &renderer)) {
 		return 0;
 	}
 
-	update_cells();
+	update();
 
 	while (!SHOULD_QUIT)
 	{
@@ -168,12 +238,11 @@ int main(int argc, char* argv[])
 
 		for (const Cell& cell : CELLS)
 		{
+			SDL_SetRenderDrawColor(renderer, 192, 192, 192, 0xFF);
+
 			if (SDL_PointInRect(&MOUSE_POS, &cell.rect)) {
 				SDL_SetRenderDrawColor(renderer, 38, 87, 82, 0xFF);
 			} 
-			else {
-				SDL_SetRenderDrawColor(renderer, 192, 192, 192, 0xFF);
-			}
 
 			if (cell.isSelected) {
 				SDL_SetRenderDrawColor(renderer, 203, 38, 6, 0xFF);
@@ -181,6 +250,23 @@ int main(int argc, char* argv[])
 
 			SDL_RenderDrawRect(renderer, &cell.rect);
 		}
+
+		for (const Column& column : COLUMNS)
+		{
+			SDL_SetRenderDrawColor(renderer, 248, 249, 250, 0xFF);
+			SDL_RenderFillRect(renderer, &column.rect);
+			SDL_SetRenderDrawColor(renderer, 67, 66, 61, 0xFF);
+			SDL_RenderDrawRect(renderer, &column.rect);
+		}
+
+		for (const Row& row : ROWS)
+		{
+			SDL_SetRenderDrawColor(renderer, 248, 249, 250, 0xFF);
+			SDL_RenderFillRect(renderer, &row.rect);
+			SDL_SetRenderDrawColor(renderer, 67, 66, 61, 0xFF);
+			SDL_RenderDrawRect(renderer, &row.rect);
+		}
+
 		SDL_RenderPresent(renderer);
 	}
 
