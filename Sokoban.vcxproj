@@ -137,11 +137,13 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Mode.cpp" />
     <ClCompile Include="ProgramState.cpp" />
+    <ClCompile Include="Changes.cpp" />
     <ClCompile Include="tinyexpr.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Align.h" />
     <ClInclude Include="Base.h" />
+    <ClInclude Include="Changes.h" />
     <ClInclude Include="Mode.h" />
     <ClInclude Include="ProgramState.h" />
     <ClInclude Include="tinyexpr.h" />
