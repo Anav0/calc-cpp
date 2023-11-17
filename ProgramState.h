@@ -12,6 +12,7 @@ struct ProgramState
 {
 private:
 	std::vector<Mode*> _modes;
+	ModeType currentMode = View;
 
 public:
 	int rowWidth = 40;
@@ -28,7 +29,7 @@ public:
 
 	int cellPadding[4] = {10, 10, 0, 0}; // L R T B
 
-	ModeType currentMode = View;
+	
 
 	SDL_Point mousePos;
 
@@ -67,6 +68,8 @@ public:
 	}
 
 	Mode* getCurrentMode();
+
+	void switchMode(SDL_Renderer*, ModeType mode);
 	
 	void moveCaret(int pos);
 	void moveCaretToEndOfSelectedCellText();

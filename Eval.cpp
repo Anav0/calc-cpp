@@ -1,13 +1,18 @@
 #include "Eval.h"
 
-void evaluate(Cell* cell, const std::vector<Cell>& cells, const std::vector<Column>& columns) {
+bool evaluate(Cell* cell, const std::vector<Cell>& cells, const std::vector<Column>& columns) {
+
+	if(cell->content.length() == 0 || cell->content[0] != '=')
+		return false;
+
 	std::string expr = cell->content;
 
-	if(expr[0] == '=') 
-		cell->formula = expr;
+	cell->formula = expr;
 
 	if (cell->formula != "")
 		expr = cell->formula;
+	else
+		cell->formula = expr;
 
 	expr = expr.erase(0, 1); // Removes '='
 
@@ -53,4 +58,6 @@ void evaluate(Cell* cell, const std::vector<Cell>& cells, const std::vector<Colu
 	} else {
 		cell->content = std::to_string(result);
 	}
+
+	return true;
 }

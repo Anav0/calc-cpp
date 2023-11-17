@@ -132,7 +132,7 @@ void render(SDL_Renderer* renderer) {
 		rowIndex++;
 	}
 
-	if (STATE.currentMode == Edit) {
+	if (STATE.getCurrentMode()->type == Edit) {
 		SDL_SetRenderDrawColor(renderer, STATE.caret.color.r, STATE.caret.color.g, STATE.caret.color.b, STATE.caret.color.a);
 		SDL_RenderFillRect(renderer, &STATE.caret.rect);
 	}
