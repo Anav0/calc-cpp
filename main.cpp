@@ -13,8 +13,8 @@ const int ROW_H = 20;
 const int COL_W = 100;
 const int COL_H = 20;
 
-static int SCREEN_WIDTH = 1024;
-static int SCREEN_HEIGHT = 720;
+static int SCREEN_WIDTH = 1336;
+static int SCREEN_HEIGHT = 768;
 
 static bool SHOULD_QUIT = false;
 
@@ -38,6 +38,9 @@ struct Column {
 struct Row {
 	SDL_Rect rect;
 	SDL_bool isSelected = SDL_FALSE;
+
+	SDL_Rect textRect;
+	SDL_Texture* textTexture;
 };
 
 static std::vector<Cell> CELLS;
@@ -102,11 +105,13 @@ SDL_Texture* loadTexture(SDL_Renderer* renderer, const char* path, int* w, int* 
 	return imageTexture;
 }
 
-void update_rows() {
+void update_rows(SDL_Renderer* renderer) {
 	int y = COL_H;
 	bool exceededScreenHeight = false;
-	ROWS.clear();
+	SDL_Color fontColor { 0, 0, 0 };
 
+	ROWS.clear();
+	int i = 1;
 	while (!exceededScreenHeight) {
 		Row row{};
 
@@ -117,10 +122,17 @@ void update_rows() {
 		rect.y = y;
 		row.rect = rect;
 
+		std::string s = std::to_string(i);
+		SDL_Surface* text = TTF_RenderText_Blended(FONT, s.c_str(), fontColor);
+		
+		row.textRect = { rect.x + ((row.rect.w - text->w) / 2), rect.y + ((row.rect.h - text->h) / 2), text->w, text->h };
+		row.textTexture = SDL_CreateTextureFromSurface(renderer, text);
+
 		y += ROW_H;
 		exceededScreenHeight = (rect.y + ROW_H) > SCREEN_HEIGHT;
 
 		ROWS.push_back(row);
+		i++;
 	}
 }
 
@@ -128,7 +140,6 @@ void update_columns(SDL_Renderer* renderer) {
 	int x = ROW_W;
 	bool exceededScreenWidth = false;
 	SDL_Color fontColor { 0, 0, 0 };
-	SDL_Color bgColor { 255, 255, 255, 255 };
 
 	COLUMNS.clear();
 	int i = 0;
@@ -143,8 +154,9 @@ void update_columns(SDL_Renderer* renderer) {
 		col.rect = rect;
 
 		std::string s(1, char(65 + i));
-		SDL_Surface* text = TTF_RenderText_Shaded(FONT, s.c_str(), fontColor, bgColor);
-		col.textRect = { col.rect.x + COL_W / 2, col.rect.y, text->w, text->h };
+		SDL_Surface* text = TTF_RenderText_Blended(FONT, s.c_str(), fontColor);
+		
+		col.textRect = { rect.x + ((col.rect.w - text->w) / 2), rect.y + ((col.rect.h - text->h) / 2), text->w, text->h };
 		col.textTexture = SDL_CreateTextureFromSurface(renderer, text);
 
 		x += COL_W;
@@ -188,7 +200,7 @@ void update_cells() {
 
 void update(SDL_Renderer* renderer) {
 	update_cells();
-	update_rows();
+	update_rows(renderer);
 	update_columns(renderer);
 }
 
@@ -294,6 +306,8 @@ int main(int argc, char* argv[])
 			SDL_RenderFillRect(renderer, &row.rect);
 			SDL_SetRenderDrawColor(renderer, 67, 66, 61, 0xFF);
 			SDL_RenderDrawRect(renderer, &row.rect);
+
+			SDL_RenderCopy(renderer, row.textTexture, NULL, &row.textRect);
 		}
 
 		SDL_RenderPresent(renderer);
