@@ -65,6 +65,7 @@ struct Cell {
 	void showErrorMessage(SDL_Renderer*, TTF_Font*, SDL_Color, int[4]);
 	void showFormula(SDL_Renderer*, TTF_Font*, SDL_Color, int[4]);
 	void showEvaluation(SDL_Renderer*, TTF_Font*, SDL_Color, int[4]);
+	void updateContent(SDL_Renderer*, TTF_Font*, SDL_Color, int[4], std::string*);
 };
 
 struct Column {

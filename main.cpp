@@ -84,10 +84,17 @@ void render(SDL_Renderer* renderer) {
 	SDL_Color modeColor = STATE.getCurrentMode()->color;
 
 	Gui::startGroup(0, 0, false, 10);
-	if (!STATE.selectedCell->formula.empty())
-		Gui::drawInput(1, STATE.fontColor, 30, STATE.selectedCell->formula);
-	else
-		Gui::drawInput(1, STATE.fontColor, 30, STATE.selectedCell->content);
+	if (!STATE.selectedCell->formula.empty()) {
+		if (Gui::drawInput(1, STATE.fontColor, 30, &STATE.selectedCell->formula)) {
+			STATE.selectedCell->showFormula(renderer, STATE.font, STATE.fontColor, STATE.cellPadding);
+		}
+	}
+
+	else {
+		if (Gui::drawInput(1, STATE.fontColor, 30, &STATE.selectedCell->content)) {
+			STATE.selectedCell->updateContent(renderer, STATE.font, STATE.fontColor, STATE.cellPadding, &STATE.selectedCell->content);
+		}
+	}
 
 	Gui::endGroup();
 

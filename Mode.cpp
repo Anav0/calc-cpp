@@ -1,6 +1,7 @@
 #include "Mode.h"
 
 #include "ProgramState.h"
+#include "Gui.h"
 
 void Mode::handleEvents(SDL_Renderer* renderer, SDL_Event* e,
 	ProgramState* state) {
@@ -214,17 +215,15 @@ void ViewMode::handleKeydownEvent(SDL_Renderer* renderer, SDL_Event* e,
 	}
 }
 
-void ViewMode::handleTextInput(SDL_Renderer* renderer, SDL_Event* e,
-	ProgramState* state) {
+void ViewMode::handleTextInput(SDL_Renderer* renderer, SDL_Event* e, ProgramState* state) {
+	if (Gui::activeElementId) return;
+
 	if (SDL_strlen(e->text.text) < MAX_TEXT_LEN) {
 		state->selectedCell->content = *e->text.text;
 		state->selectedCell->showEvaluation(
 			renderer, state->font, state->fontColor, state->cellPadding);
 		state->moveCaretToEndOfSelectedCellText();
 		state->switchMode(renderer, Edit);
-
-
-
 	}
 	else {
 		printf("Input is too big!\n");
@@ -241,7 +240,7 @@ void ViewMode::handleMouseButtonDown(SDL_Renderer* renderer, SDL_Event* e,
 	ProgramState* state) {
 	switch (e->button.button) {
 	case SDL_BUTTON_LEFT:
-		SDL_StopTextInput();
+		//SDL_StopTextInput();
 
 		for (Cell& cell : state->cells) {
 			if (SDL_PointInRect(&state->mousePos, &cell.rect)) {

@@ -1,5 +1,23 @@
 #include "Base.h";
 
+void Cell::updateContent(SDL_Renderer* renderer, TTF_Font* font, SDL_Color color, int padding[4], std::string* newContent) {
+
+	if (*newContent == "") return;
+	//Note(Igor): Rendering text like this is hugely inefficient. We allocate whenever text changes
+	SDL_Surface* text = TTF_RenderText_Blended(font, newContent->c_str(), color);
+
+	if (text == NULL) {
+		contentTexture = NULL;
+		return;
+	}
+
+	contentRect.h = text->h;
+	contentRect.w = text->w;
+
+	left(&rect, &contentRect, padding);
+	contentTexture = SDL_CreateTextureFromSurface(renderer, text);
+}
+
 void Cell::showErrorMessage(SDL_Renderer* renderer, TTF_Font* font, SDL_Color color, int padding[4]) {
 
 	if (Err == Ok) return;
@@ -15,40 +33,14 @@ void Cell::showErrorMessage(SDL_Renderer* renderer, TTF_Font* font, SDL_Color co
 		break;
 	}
 
-	SDL_Surface* text = TTF_RenderText_Blended(font, errorMsg.c_str(), color);
-
-	contentRect.h = text->h;
-	contentRect.w = text->w;
-
-	left(&rect, &contentRect, padding);
-	contentTexture = SDL_CreateTextureFromSurface(renderer, text);
+	Cell::updateContent(renderer, font, color, padding, &errorMsg);
 }
 
 void Cell::showFormula(SDL_Renderer* renderer, TTF_Font* font, SDL_Color color, int padding[4]) {
-
-	if (formula == "") return;
-
-	SDL_Surface* text = TTF_RenderText_Blended(font, formula.c_str(), color);
-
-	contentRect.h = text->h;
-	contentRect.w = text->w;
-
-	left(&rect, &contentRect, padding);
-	contentTexture = SDL_CreateTextureFromSurface(renderer, text);
+	updateContent(renderer, font, color, padding, &formula);
 }
 
 void Cell::showEvaluation(SDL_Renderer* renderer, TTF_Font* font, SDL_Color color, int padding[4]) {
-
-	SDL_Surface* text = TTF_RenderText_Blended(font, content.c_str(), color);
-
-	if (text == NULL) {
-		contentTexture = NULL;
-		return;
-	}
-
-	contentRect.h = text->h;
-	contentRect.w = text->w;
-
-	left(&rect, &contentRect, padding);
-	contentTexture = SDL_CreateTextureFromSurface(renderer, text);
+	updateContent(renderer, font, color, padding, &content);
 }
+

@@ -75,6 +75,7 @@ private:
 	static SDL_Point mousePos;
 	static bool clicked;
 	static UiGroup currentGroup;
+	static SDL_Event* lastEvent;
 	Gui() {};
 
 public:
@@ -89,7 +90,7 @@ public:
 	static void drawText(SDL_Color, std::string, TTF_Font*);
 	static void drawText(SDL_Color, std::string);
 	static bool drawBtn(SDL_Color, std::string);
-	static void drawInput(int id, SDL_Color, int, std::string);
+	static bool drawInput(int id, SDL_Color, int, std::string*);
 	static void drawCursor(int x, int y, int height, int thickness, SDL_Color color);
 
 	static void events(SDL_Event*);
