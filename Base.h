@@ -73,6 +73,8 @@ inline void updateCellContentTexture(SDL_Renderer* renderer, TTF_Font* font, SDL
 	}
 
 	cell->contentRect = { cell->rect.x, cell->rect.y + ((cell->rect.h - text->h) / 2), text->w, text->h };
-	
+
 	cell->contentTexture = SDL_CreateTextureFromSurface(renderer, text);
 }
+
+

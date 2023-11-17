@@ -1,11 +1,10 @@
 #pragma once
 
 #include <stdio.h>
-
 #include <SDL.h>
 
 #include "Base.h"
-#include "tinyexpr.h"
+#include "Eval.h"
 
 struct ProgramState;
 
@@ -54,7 +53,7 @@ class ExprMode : public Mode {
 private:
 	void navigate(SDL_Renderer*, Direction, ProgramState*);
 	void addOperator(SDL_Renderer*, char, ProgramState*);
-	void evaluate(SDL_Renderer*, ProgramState*);
+
 public:
 	ExprMode() {
 		type = Expr;
