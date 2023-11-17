@@ -219,8 +219,7 @@ void ViewMode::handleKeydownEvent(SDL_Renderer* renderer, SDL_Event* e, ProgramS
 }
 
 void ViewMode::handleTextInput(SDL_Renderer* renderer, SDL_Event* e, ProgramState* state) {
-	
-	if (Gui::activeElementId) return;
+	if (Gui::activeElementId > 0) return;
 
 	if (SDL_strlen(e->text.text) < MAX_TEXT_LEN) {
 		state->selectedCell->content = *e->text.text;
