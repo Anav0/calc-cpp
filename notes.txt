@@ -1,10 +1,12 @@
+19:50 - 08.01.2023
+	
+
 21:04 - 04.01.2023
 	[x] Kolor na podstawie aktualnego trybu
 	[] Kopiowanie i wklejanie tekstu
 	[] Zaznaczanie fragmentów komórek
 	[] Wyrównywanie, pogrubianie, italizowanie etc.
 	[] hot loading config
-	[]
 
 22:00 - 03.01.2023
 	[x] Padding dla komórek
@@ -14,5 +16,5 @@
 	[] Ustawienia powinny być pobierane z pliku
 	[x] Del powinien czyścić komórkę
 	[x] Po rozpoczęciu pisania, program automatycznie powinien przechodzić w tryb "Edit"
-	[] Kursor powinien fajnie migać
+	[-] Kursor powinien fajnie migać
 	[] Wycignij "centrowanie" prostokątów do osobnych funkcji
