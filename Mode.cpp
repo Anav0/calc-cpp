@@ -60,13 +60,12 @@ void EditMode::handleKeydownEvent(SDL_Renderer* renderer, SDL_Event* e, ProgramS
 	case SDL_SCANCODE_RETURN:
 		state->currentMode = View;
 		break;
-	case SDLK_BACKSPACE:
-		state->selectedCell->content[strlen(state->selectedCell->content) - 1] = '\0';
+	case SDL_SCANCODE_BACKSPACE:
+		if (state->caret.pos == 0) return;
+
+		state->moveCaret(state->caret.pos-1);
+		removeAt(state->caret.pos, state->selectedCell->content);
 		updateCellContentTexture(renderer, state->FONT, state->fontColor, state->selectedCell);
-
-		if (state->caret.pos > strlen(state->selectedCell->content))
-			state->moveCaret(strlen(state->selectedCell->content));
-
 		break;
 	case SDL_SCANCODE_DOWN:
 		break;
@@ -86,15 +85,23 @@ void EditMode::handleMouseButtonDown(SDL_Renderer* renderer, SDL_Event* e, Progr
 }
 
 void EditMode::handleTextInput(SDL_Renderer* renderer, SDL_Event* e, ProgramState* state) {
-	if (state->selectedCell != NULL) {
-		if (SDL_strlen(state->selectedCell->content) + SDL_strlen(e->text.text) < MAX_TEXT_LEN) {
-			SDL_strlcat(state->selectedCell->content, e->text.text, sizeof(state->selectedCell->content));
+	if (SDL_strlen(state->selectedCell->content) + SDL_strlen(e->text.text) < MAX_TEXT_LEN) {
+		int make_room_at = state->caret.pos;
+		int room_to_make = 1;
+		
+		memmove(
+			state->selectedCell->content + make_room_at + room_to_make,
+			state->selectedCell->content + make_room_at,
+			MAX_TEXT_LEN - (make_room_at + room_to_make)
+		);
+		state->selectedCell->content[state->caret.pos] = *e->text.text;
 
-			updateCellContentTexture(renderer, state->FONT, state->fontColor, state->selectedCell);
-		}
-		else {
-			printf("Input is too big!\n");
-		}
+		state->moveCaret(state->caret.pos+1);
+
+		updateCellContentTexture(renderer, state->FONT, state->fontColor, state->selectedCell);
+	}
+	else {
+		printf("Input is too big!\n");
 	}
 }
 

@@ -62,6 +62,14 @@ inline void updateCellContentTexture(SDL_Renderer* renderer, TTF_Font* font, SDL
 		return;
 	}
 
-	cell->contentRect = { cell->rect.x + ((cell->rect.w - text->w) / 2), cell->rect.y + ((cell->rect.h - text->h) / 2), text->w, text->h };
+	cell->contentRect = { cell->rect.x, cell->rect.y + ((cell->rect.h - text->h) / 2), text->w, text->h };
+	
 	cell->contentTexture = SDL_CreateTextureFromSurface(renderer, text);
+}
+
+inline void removeAt(int index, char arr[MAX_TEXT_LEN]) {
+	for (int i = index; i < MAX_TEXT_LEN-1; i++) {
+		arr[i] = arr[i + 1];
+		arr[i + 1] = '\0';
+	}
 }
