@@ -3,7 +3,7 @@
 	[x] - Usuwanie pirwszego znaku nie działa
 	[x] - Reset kursora po kliknięciu
 	[x] - Znaki powinny być wstawiane w miejscy kursora
-	[] - Ruch kursora na różnych kontrolkach
+	[x] - Ruch kursora na różnych kontrolkach
 	[] - Cache dla czcionek
 20:00 - 16.03.2023
 15:03 - 15.03.2023
