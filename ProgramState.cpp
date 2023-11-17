@@ -15,9 +15,8 @@ Mode* ProgramState::getCurrentMode()
 void ProgramState::moveCaret(int pos)
 {
 	if (pos <= 0) {
-		SDL_Rect cellTextRect = selectedCell->contentRect;
-		caret.rect.x = cellTextRect.x;
-		caret.rect.y = cellTextRect.y;
+		caret.rect.x = selectedCell->rect.x + cellPadding[0];
+		caret.rect.y = selectedCell->rect.y + ((selectedCell->rect.h - selectedCell->rect.h) / 2);
 		caret.pos = 0;
 		return;
 	}
@@ -48,14 +47,16 @@ void ProgramState::moveCaret(int pos)
 }
 
 void ProgramState::moveCaretToStartOfSelectedCell() {
-	caret.rect.x = selectedCell->rect.x;
-	caret.rect.y = selectedCell->rect.y;
+	caret.rect.x = selectedCell->rect.x + cellPadding[0];
+	caret.rect.y = selectedCell->rect.y + ((selectedCell->rect.h - caret.rect.h) / 2);
 	caret.pos = 0;
 }
 
 void ProgramState::moveCaretToEndOfSelectedCellText() {
+	if (selectedCell->content == "") return;
+
 	caret.rect.x = selectedCell->contentRect.x + selectedCell->contentRect.w;
-	caret.rect.y = selectedCell->contentRect.y;
+	caret.rect.y = selectedCell->rect.y + ((selectedCell->rect.h - caret.rect.h) / 2);
 	caret.pos = selectedCell->content.length();
 }
 

@@ -47,7 +47,7 @@ struct Cell {
 	int colIndex;
 	int rowIndex;
 
-	void updateContentTexture(SDL_Renderer*, TTF_Font*, SDL_Color);
+	void updateContentTexture(SDL_Renderer*, TTF_Font*, SDL_Color, int[4]);
 };
 
 struct Column {

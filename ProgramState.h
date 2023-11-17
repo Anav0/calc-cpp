@@ -26,6 +26,8 @@ public:
 	bool shouldQuit;
 	bool shouldUpdate;
 
+	int cellPadding[4] = {10, 10, 0, 0}; // L R T B
+
 	ModeType currentMode = View;
 
 	SDL_Point mousePos;
