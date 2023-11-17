@@ -1,42 +1,41 @@
 #include <stdio.h>
 #include <stdbool.h>
+#include <vector>
 
 #include <SDL.h>
 #include <SDL_image.h>
 
-#define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
-#define MIN(X, Y) (((X) < (Y)) ? (X) : (Y))
-
-#define SCREEN_WIDTH    1024
-#define SCREEN_HEIGHT   720
-
-#define TN_FLAG_IMAGE_PATH "assets/image.png"
+static int SCREEN_WIDTH  = 1024;
+static int SCREEN_HEIGHT = 720;
+static bool SHOULD_QUIT  = false;
 
 struct Cell {
-	//SDL_Texture* texture;
 	SDL_Rect rect;
 };
 
-int init(SDL_Window** window, SDL_Renderer** renderer)
+static std::vector<Cell> CELLS;
+
+bool init(SDL_Window** window, SDL_Renderer** renderer)
 {
 	if (SDL_Init(SDL_INIT_VIDEO) < 0)
 	{
 		printf("SDL2 could not be initialized!\n" "SDL2 Error: %s\n", SDL_GetError());
-		return 0;
+		return false;
 	}
 
 	int flags = IMG_INIT_PNG;
 	if ((IMG_Init(flags) & flags) != flags) {
 		printf("SDL2_image could not be initialized with PNG support!\n"
 			"SDL2_image Error: %s\n", IMG_GetError());
-		return 0;
+		return false;
 	}
 
-	*window = SDL_CreateWindow("Sokoban", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+	Uint32 windowFlags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE;
+	*window = SDL_CreateWindow("Sokoban", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, windowFlags);
 	if (!window)
 	{
 		printf("Window could not be created!\n" "SDL_Error: %s\n", SDL_GetError());
-		return 0;
+		return false;
 	}
 	*renderer = SDL_CreateRenderer(*window, -1, SDL_RENDERER_ACCELERATED);
 	if (!renderer)
@@ -44,8 +43,10 @@ int init(SDL_Window** window, SDL_Renderer** renderer)
 		printf("Renderer could not be created!\n"
 			"SDL_Error: %s\n", SDL_GetError());
 
-		return 0;
+		return false;
 	}
+
+	return true;
 }
 
 SDL_Texture* loadTexture(SDL_Renderer* renderer, const char* path, int* w, int* h)
@@ -61,20 +62,35 @@ SDL_Texture* loadTexture(SDL_Renderer* renderer, const char* path, int* w, int* 
 	return imageTexture;
 }
 
-int main(int argc, char* argv[])
-{
-	SDL_Renderer* renderer = 0;
-	SDL_Window* window = 0;
-	bool shouldQuit = false;
-
-	if (!init(&window, &renderer)) {
-		return 0;
+void handleWindowEvent(SDL_Event* e) {
+	switch (e->window.event) {
+	case SDL_WINDOWEVENT_RESIZED:
+		SDL_Log("Window %d resized to %dx%d", e->window.windowID, e->window.data1, e->window.data2);
+		SCREEN_WIDTH = e->window.data1;
+		SCREEN_HEIGHT= e->window.data2;
 	}
+}
 
-	const int n = 200;
-	Cell cells[n];
+void handleEvents() {
+	SDL_Event e;
+
+	SDL_WaitEvent(&e);
+
+	switch (e.type) {
+	case SDL_QUIT:
+		SHOULD_QUIT = true;
+		break;
+	case SDL_WINDOWEVENT:
+		handleWindowEvent(&e);
+	}
+}
+
+void update() {
 	int y = 0, x = 0;
-	for (size_t i = 0; i < n; i++)
+	bool screenIsNotFilled = true;
+	CELLS.clear();
+
+	while (screenIsNotFilled)
 	{
 		SDL_Rect cellRect{};
 		cellRect.w = 100;
@@ -92,23 +108,37 @@ int main(int argc, char* argv[])
 
 		Cell cell{};
 		cell.rect = cellRect;
-		cells[i] = cell;
+
+		CELLS.push_back(cell);
+
+		screenIsNotFilled = y < SCREEN_HEIGHT;
+	}
+}
+
+int main(int argc, char* argv[])
+{
+	SDL_Renderer* renderer = 0;
+	SDL_Window*   window   = 0;
+
+	if (!init(&window, &renderer)) {
+		return 0;
 	}
 
-	while (!shouldQuit)
+	std::vector<Cell> cells;
+	int y = 0, x = 0;
+	bool screenIsNotFilled = true;
+
+	while (!SHOULD_QUIT)
 	{
-		SDL_Event e;
+		handleEvents();
 
-		SDL_WaitEvent(&e);
-
-		if (e.type == SDL_QUIT)
-			shouldQuit = true;
+		update();
 
 		SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
 		SDL_RenderClear(renderer);
-		SDL_SetRenderDrawColor(renderer, 245, 141, 86, 0xFF); //orange
-		
-		for (Cell cell : cells)
+		SDL_SetRenderDrawColor(renderer, 192, 192, 192, 0xFF);
+
+		for (Cell cell : CELLS)
 		{
 			SDL_RenderDrawRect(renderer, &cell.rect);
 		}
