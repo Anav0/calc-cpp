@@ -87,4 +87,5 @@ public:
 	bool evaluate(SDL_Renderer*, Cell*);
 	void reset();
 	void recordCellChange();
+	int getNumberOfChanges();
 };

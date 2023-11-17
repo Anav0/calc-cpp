@@ -34,4 +34,6 @@ struct Changes
 	std::deque<Change*> queque;
 
 	void undo(std::vector<Cell>&);
+	void clear();
+	int length();
 };

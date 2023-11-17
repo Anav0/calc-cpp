@@ -204,3 +204,8 @@ void ProgramState::recordCellChange()
 	CellChange* cellChange = new CellChange(*selectedCell);
 	changes.queque.push_front(cellChange);
 }
+
+int ProgramState::getNumberOfChanges()
+{
+	return changes.length();
+}

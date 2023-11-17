@@ -1,4 +1,6 @@
 15:03 - 15.03.2023
+	[] - Dodać informację o ilości wprowadzonych zmian w programie
+	[] - Ctrl-s powinien zapisywać zmiany (tymczasowo może czyścić kolejkę zmian)
 	
 17:07 - 23.01.2023
 	[x] - Zaimplementować kolejkę zmian

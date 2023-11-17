@@ -8,6 +8,7 @@
 #include <SDL_ttf.h>
 
 #include "Align.h"
+#include <string>
 
 #define MAX_TEXT_LEN 256
 #define MAX_CHANGES 100
@@ -83,3 +84,5 @@ struct Row {
 
 	std::string content;
 };
+
+void drawText(SDL_Renderer*, int, int, SDL_Color, std::string, TTF_Font*);

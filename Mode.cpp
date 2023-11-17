@@ -184,6 +184,10 @@ void EditMode::handleTextInput(SDL_Renderer* renderer, SDL_Event* e,
 void ViewMode::handleKeydownEvent(SDL_Renderer* renderer, SDL_Event* e,
 	ProgramState* state) {
 	switch (e->key.keysym.scancode) {
+	case SDL_SCANCODE_S:
+		if (e->key.keysym.mod & KMOD_LCTRL)
+			state->changes.clear();
+		break;
 	case SDL_SCANCODE_Z:
 		if (e->key.keysym.mod & KMOD_LCTRL)
 			state->changes.undo(state->cells);

@@ -21,3 +21,13 @@ void Changes::undo(std::vector<Cell>& cells) {
 
 	queque.pop_front();
 }
+
+void Changes::clear()
+{
+	queque.clear();
+}
+
+int Changes::length()
+{
+	return queque.size();
+}

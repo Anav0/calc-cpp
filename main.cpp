@@ -12,6 +12,7 @@
 
 #include "Base.h"
 #include "ProgramState.h"
+#include <format>
 
 static ProgramState STATE{};
 
@@ -99,6 +100,8 @@ void render(SDL_Renderer* renderer) {
 
 		if (cell.contentTexture != NULL)
 			SDL_RenderCopy(renderer, cell.contentTexture, NULL, &cell.contentRect);
+
+
 	}
 
 	int colIndex = 0;
@@ -140,6 +143,10 @@ void render(SDL_Renderer* renderer) {
 		SDL_RenderFillRect(renderer, &STATE.caret.rect);
 	}
 
+	auto numberOfChanges = STATE.getNumberOfChanges();
+	if (numberOfChanges > 0) {
+		drawText(renderer, 50, STATE.screenHeight - 50, STATE.fontColor, std::to_string(numberOfChanges) + " unsaved changes", STATE.font);
+	}
 
 	SDL_RenderPresent(renderer);
 }
@@ -202,7 +209,7 @@ void update_columns(SDL_Renderer* renderer) {
 		col.textRect.w = text->w;
 		col.textRect.h = text->h;
 		center(&col.rect, &col.textRect);
-		
+
 		col.textTexture = SDL_CreateTextureFromSurface(renderer, text);
 
 		x += STATE.colWidth;
@@ -222,7 +229,7 @@ void update_cells() {
 	uint16_t i = 0;
 	int cellsInRow = 0;
 	int observedNumberOfRows = 0;
-	int rowIndex    = 0;
+	int rowIndex = 0;
 	int columnIndex = 0;
 	while (true)
 	{
