@@ -81,4 +81,5 @@ public:
 	Cell* getCellToThe(Cell*, Direction);
 
 	bool evaluate(SDL_Renderer*, Cell*);
+	void reset();
 };

@@ -304,6 +304,7 @@ int main(int argc, char* argv[])
 
 		if (STATE.shouldUpdate) {
 			update(renderer);
+			STATE.reset(); //Note(Igor): temperary solution
 			STATE.shouldUpdate = false;
 		}
 

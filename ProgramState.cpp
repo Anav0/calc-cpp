@@ -188,3 +188,7 @@ bool ProgramState::evaluate(SDL_Renderer* renderer, Cell* cell) {
 		return true;
 	}
 }
+
+void ProgramState::reset() {
+	selectedCell = &cells[0];
+}
