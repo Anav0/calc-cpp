@@ -4,15 +4,17 @@
 #include <stdbool.h>
 #include <vector>
 #include <cassert>
+#include <format>
+#include <string>
 
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
-#include <string>
 
 #include "Base.h"
 #include "ProgramState.h"
-#include <format>
+#include "Gui.h"
+
 
 static ProgramState STATE{};
 
@@ -53,6 +55,7 @@ bool init(SDL_Window** window, SDL_Renderer** renderer)
 
 	const char* font_path = "./assets/fonts/Poppins-Regular.ttf";
 	STATE.font = TTF_OpenFont(font_path, 14);
+	Gui::init(*renderer, STATE.font);
 
 	if (!STATE.font) {
 		printf("Failed to load STATE.FONT: '%s' with msg: '%s'", font_path, TTF_GetError());
@@ -100,8 +103,6 @@ void render(SDL_Renderer* renderer) {
 
 		if (cell.contentTexture != NULL)
 			SDL_RenderCopy(renderer, cell.contentTexture, NULL, &cell.contentRect);
-
-
 	}
 
 	int colIndex = 0;
@@ -145,7 +146,10 @@ void render(SDL_Renderer* renderer) {
 
 	auto numberOfChanges = STATE.getNumberOfChanges();
 	if (numberOfChanges > 0) {
-		drawText(renderer, 50, STATE.screenHeight - 50, STATE.fontColor, std::to_string(numberOfChanges) + " unsaved changes", STATE.font);
+		Gui::drawText(50, STATE.screenHeight - 50, STATE.fontColor, std::to_string(numberOfChanges) + " unsaved changes");
+		if (Gui::drawBtn(100, 100, STATE.fontColor, "CLICK")) {
+
+		}
 	}
 
 	SDL_RenderPresent(renderer);
@@ -286,6 +290,7 @@ void handleEvents(SDL_Renderer* renderer) {
 
 	SDL_WaitEvent(&e);
 
+	Gui::events(&e);
 	Mode* currentMode = STATE.getCurrentMode();
 	currentMode->handleEvents(renderer, &e, &STATE);
 }
@@ -316,6 +321,8 @@ int main(int argc, char* argv[])
 		}
 
 		render(renderer);
+
+		Gui::endOfLoop();
 	}
 
 	SDL_DestroyRenderer(renderer);

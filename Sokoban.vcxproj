@@ -134,6 +134,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Base.cpp" />
+    <ClCompile Include="Gui.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Mode.cpp" />
     <ClCompile Include="ProgramState.cpp" />
@@ -144,6 +145,7 @@
     <ClInclude Include="Align.h" />
     <ClInclude Include="Base.h" />
     <ClInclude Include="Changes.h" />
+    <ClInclude Include="Gui.h" />
     <ClInclude Include="Mode.h" />
     <ClInclude Include="ProgramState.h" />
     <ClInclude Include="tinyexpr.h" />
