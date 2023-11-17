@@ -4,16 +4,19 @@
 #include <SDL.h>
 #include <SDL_image.h>
 
-// Define MAX and MIN macros
 #define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
 #define MIN(X, Y) (((X) < (Y)) ? (X) : (Y))
 
-// Define screen dimensions
 #define SCREEN_WIDTH    1024
 #define SCREEN_HEIGHT   720
 
-// Define Tunisia flag image path
 #define TN_FLAG_IMAGE_PATH "assets/image.png"
+
+struct Cell {
+	SDL_Texture* texture;
+	SDL_Rect rect;
+	int w, h, x, y;
+};
 
 int init(SDL_Window** window, SDL_Renderer** renderer)
 {
@@ -46,33 +49,54 @@ int init(SDL_Window** window, SDL_Renderer** renderer)
 	}
 }
 
+SDL_Texture* loadTexture(SDL_Renderer* renderer, const char* path, int* w, int* h)
+{
+	SDL_Texture* imageTexture = IMG_LoadTexture(renderer, path);
+	if (!imageTexture)
+	{
+		printf("Unable to load image '%s'!\n" "SDL_image Error: %s", path, IMG_GetError());
+		return NULL;
+	}
+
+	SDL_QueryTexture(imageTexture, NULL, NULL, w, h);
+	return imageTexture;
+}
+
 int main(int argc, char* argv[])
 {
 	SDL_Renderer* renderer = 0;
 	SDL_Window* window = 0;
+	bool shouldQuit = false;
 
 	if (!init(&window, &renderer)) {
 		return 0;
 	}
 
-	SDL_Texture* imageTexture = IMG_LoadTexture(renderer, TN_FLAG_IMAGE_PATH);
-	if (!imageTexture)
-	{
-		printf("Unable to load image '%s'!\n"
-			"SDL_image Error: %s", TN_FLAG_IMAGE_PATH, IMG_GetError());
-		return false;
+	int w, h;
+	SDL_Texture* imageTexture = loadTexture(renderer, "./assets/image.png", &w, &h);
+
+	if (imageTexture == NULL) {
+		printf("Failed to load texture");
+		return 0;
 	}
 
-	int w, h;
-	SDL_QueryTexture(imageTexture, NULL, NULL, &w, &h);
+	Cell cells[10];
+	for (size_t i = 0; i < 10; i++)
+	{
+		SDL_Rect cellRect{};
+		cellRect.w = w;
+		cellRect.h = h;
+		cellRect.x = i*w;
+		cellRect.y = 10;
 
-	SDL_Rect imageReact{};
-	imageReact.w = w;
-	imageReact.h = h;
-	imageReact.x = SCREEN_WIDTH / 2 - imageReact.w / 2;
-	imageReact.y = SCREEN_HEIGHT / 2 - imageReact.h / 2;
+		Cell cell{};
+		cell.texture = imageTexture;
+		cell.h = h;
+		cell.w = w;
+		cell.rect = cellRect;
 
-	bool shouldQuit = false;
+		cells[i] = cell;
+	}
 
 	while (!shouldQuit)
 	{
@@ -85,7 +109,10 @@ int main(int argc, char* argv[])
 
 		SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
 		SDL_RenderClear(renderer);
-		SDL_RenderCopy(renderer, imageTexture, NULL, &imageReact);
+		for (Cell cell : cells)
+		{
+			SDL_RenderCopy(renderer, cell.texture, NULL, &cell.rect);
+		}
 		SDL_RenderPresent(renderer);
 	}
 
