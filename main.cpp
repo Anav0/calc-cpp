@@ -264,18 +264,6 @@ int main(int argc, char* argv[])
 
 	update(renderer);
 
-	/*STATE.cells[0].content = "1";
-	updateCellContentTexture(renderer, STATE.FONT, STATE.fontColor, &STATE.cells[0]);
-	STATE.cells[1].content = "2";
-	updateCellContentTexture(renderer, STATE.FONT, STATE.fontColor, &STATE.cells[1]);
-	STATE.cells[2].content = "=A1+B1";
-	updateCellContentTexture(renderer, STATE.FONT, STATE.fontColor, &STATE.cells[2]);
-
-	STATE.subjectCell = &STATE.cells[2];
-	STATE.selectedCell = &STATE.cells[2];
-
-	STATE.currentMode = Expr;*/
-
 	STATE.selectedCell = &STATE.cells[0];
 
 	while (!STATE.shouldQuit)

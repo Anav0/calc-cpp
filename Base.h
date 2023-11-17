@@ -44,6 +44,8 @@ struct Cell {
 	std::string formula;
 
 	uint16_t index;
+
+	void updateContentTexture(SDL_Renderer*, TTF_Font*, SDL_Color);
 };
 
 struct Column {
@@ -63,18 +65,3 @@ struct Row {
 
 	std::string content;
 };
-
-inline void updateCellContentTexture(SDL_Renderer* renderer, TTF_Font* font, SDL_Color color, Cell* cell) {
-	SDL_Surface* text = TTF_RenderText_Blended(font, cell->content.c_str(), color);
-
-	if (text == NULL) {
-		cell->contentTexture = NULL;
-		return;
-	}
-
-	cell->contentRect = { cell->rect.x, cell->rect.y + ((cell->rect.h - text->h) / 2), text->w, text->h };
-
-	cell->contentTexture = SDL_CreateTextureFromSurface(renderer, text);
-}
-
-
