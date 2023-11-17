@@ -1,4 +1,5 @@
 11:16 - 17.03.2023
+	[ ] - Ewaluacja wyrażenia po wprowadzeniu go przez input control
 	[ ] - Usuwanie znaków za pomocą kontroli input
 	[x] - Kursor powinien być na środku osi Y
 	[x] - Usuwanie pirwszego znaku nie działa
