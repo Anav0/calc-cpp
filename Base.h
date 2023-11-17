@@ -43,7 +43,9 @@ struct Cell {
 	std::string content;
 	std::string formula;
 
-	uint16_t index;
+	int index;
+	int colIndex;
+	int rowIndex;
 
 	void updateContentTexture(SDL_Renderer*, TTF_Font*, SDL_Color);
 };

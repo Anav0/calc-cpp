@@ -86,16 +86,8 @@ Cell* ProgramState::getCellToThe(Cell* cell, Direction direction) {
 }
 
 std::string ProgramState::getCellPosLabel(Cell* cell){
-	int cellIndex = cell->index;
-
-	int numberOfCols = columns.size();
-	int numberOfRows = rows.size();
-
-	int col = cellIndex % numberOfCols;
-	int row = cellIndex / numberOfCols;
-
-	std::string colLabel = columns[col].content;
-	std::string rowLabel = rows[row].content;
+	std::string colLabel = columns[cell->colIndex].content;
+	std::string rowLabel = rows[cell->rowIndex].content;
 
 	return (colLabel + rowLabel);
 }
