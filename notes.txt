@@ -1,4 +1,5 @@
 11:16 - 17.03.2023
+	[x] - Kursor powinien być na środku osi Y
 	[x] - Usuwanie pirwszego znaku nie działa
 	[x] - Reset kursora po kliknięciu
 	[x] - Znaki powinny być wstawiane w miejscy kursora

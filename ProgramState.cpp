@@ -14,13 +14,15 @@ Mode* ProgramState::getCurrentMode()
 
 void ProgramState::moveCaret(int pos)
 {
+	centerY(&selectedCell->rect, &caret.rect);
+
 	if (pos <= 0) {
 		caret.rect.x = selectedCell->rect.x + cellPadding[0];
 		caret.rect.y = selectedCell->rect.y + ((selectedCell->rect.h - selectedCell->rect.h) / 2);
 		caret.pos = 0;
 		return;
 	}
-
+	
 	if (pos > selectedCell->content.length()) return;
 
 	int charW, charH;
@@ -47,8 +49,9 @@ void ProgramState::moveCaret(int pos)
 }
 
 void ProgramState::moveCaretToStartOfSelectedCell() {
-	caret.rect.x = selectedCell->rect.x + cellPadding[0];
-	caret.rect.y = selectedCell->rect.y + ((selectedCell->rect.h - caret.rect.h) / 2);
+	left2(&selectedCell->rect, &caret.rect, cellPadding[0]);
+	centerY(&selectedCell->rect, &caret.rect);
+
 	caret.pos = 0;
 }
 
@@ -56,7 +59,7 @@ void ProgramState::moveCaretToEndOfSelectedCellText() {
 	if (selectedCell->content == "") return;
 
 	caret.rect.x = selectedCell->contentRect.x + selectedCell->contentRect.w;
-	caret.rect.y = selectedCell->rect.y + ((selectedCell->rect.h - caret.rect.h) / 2);
+	centerY(&selectedCell->rect, &caret.rect);
 	caret.pos = selectedCell->content.length();
 }
 
@@ -134,8 +137,8 @@ bool ProgramState::evaluate(SDL_Renderer* renderer, Cell* cell) {
 
 	while (haveCellPosToReplace) {
 		std::string exprCopy = expr;
-		auto regexIterStart  = std::sregex_iterator(exprCopy.begin(), exprCopy.end(), labelsRgx);
-		auto regexIterEnd    = std::sregex_iterator();
+		auto regexIterStart = std::sregex_iterator(exprCopy.begin(), exprCopy.end(), labelsRgx);
+		auto regexIterEnd = std::sregex_iterator();
 
 		haveCellPosToReplace = false;
 		for (std::sregex_iterator i = regexIterStart; i != regexIterEnd; ++i) {
@@ -192,7 +195,7 @@ bool ProgramState::evaluate(SDL_Renderer* renderer, Cell* cell) {
 void ProgramState::reset() {
 	selectedCell = &cells[0];
 	caret.pos = 0;
-	
+
 	while (!changes.queque.empty())
 		changes.queque.pop_back();
 }
