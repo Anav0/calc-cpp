@@ -3,9 +3,11 @@
 void evaluate(Cell* cell, const std::vector<Cell>& cells, const std::vector<Column>& columns) {
 	std::string expr = cell->content;
 
-	if (cell->formula != "") {
+	if(expr[0] == '=') 
+		cell->formula = expr;
+
+	if (cell->formula != "")
 		expr = cell->formula;
-	}
 
 	expr = expr.erase(0, 1); // Removes '='
 

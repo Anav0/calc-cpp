@@ -59,7 +59,6 @@ void EditMode::handleKeydownEvent(SDL_Renderer* renderer, SDL_Event* e, ProgramS
 {
 	switch (e->key.keysym.scancode) {
 	case SDL_SCANCODE_ESCAPE:
-
 		if (state->selectedCell->formula != "") {
 			evaluate(state->selectedCell, state->cells, state->columns);
 			state->selectedCell->updateContentTexture(renderer, state->font, state->fontColor, state->cellPadding);
@@ -250,7 +249,7 @@ void ExprMode::navigate(SDL_Renderer* renderer, Direction dir, ProgramState* sta
 void ExprMode::handleKeydownEvent(SDL_Renderer* renderer, SDL_Event* e, ProgramState* state)
 {
 	switch (e->key.keysym.scancode) {
-	
+	case SDL_SCANCODE_ESCAPE:
 	case SDL_SCANCODE_RETURN:
 		evaluate(state->subjectCell, state->cells, state->columns);
 		state->subjectCell->updateContentTexture(renderer, state->font, state->fontColor, state->cellPadding);
