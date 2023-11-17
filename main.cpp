@@ -5,12 +5,14 @@
 #include <SDL.h>
 #include <SDL_image.h>
 
-static int SCREEN_WIDTH  = 1024;
-static int SCREEN_HEIGHT = 720;
+static int  SCREEN_WIDTH  = 1024;
+static int  SCREEN_HEIGHT = 720;
 static bool SHOULD_QUIT  = false;
+SDL_Point   MOUSE_POS;
 
 struct Cell {
 	SDL_Rect rect;
+	SDL_bool isSelected = SDL_FALSE;
 };
 
 static std::vector<Cell> CELLS;
@@ -63,6 +65,7 @@ SDL_Texture* loadTexture(SDL_Renderer* renderer, const char* path, int* w, int* 
 }
 
 void update_cells() {
+	printf("UPDATE");
 	int y = 0, x = 0;
 	bool screenIsNotFilled = true;
 	CELLS.clear();
@@ -92,19 +95,23 @@ void update_cells() {
 	}
 }
 
-void handleMouseButtonDown(SDL_Event* e) {
+void handleMouseMotion(SDL_Event* e) {
+	MOUSE_POS.x = e->motion.x;
+	MOUSE_POS.y = e->motion.y;
+}
 
+void handleMouseButtonDown(SDL_Event* e) {
 	switch (e->button.button) {
 		case SDL_BUTTON_LEFT:
-			printf("Left btn down!\n");
+			for (Cell& cell : CELLS) {
+				cell.isSelected = SDL_PointInRect(&MOUSE_POS, &cell.rect);
+			}
 			break;
 
 		case SDL_BUTTON_RIGHT:
-			printf("Right btn down!\n");
 			break;
 
 		case SDL_BUTTON_MIDDLE:
-			printf("Middle btn down!\n");
 			break;
 	}
 
@@ -129,8 +136,13 @@ void handleEvents() {
 		case SDL_QUIT:
 			SHOULD_QUIT = true;
 			break;
+
+		case SDL_MOUSEMOTION:
+			handleMouseMotion(&e);
+
 		case SDL_MOUSEBUTTONDOWN:
 			handleMouseButtonDown(&e);
+
 		case SDL_WINDOWEVENT:
 			handleWindowEvent(&e);
 	}
@@ -140,33 +152,31 @@ int main(int argc, char* argv[])
 {
 	SDL_Renderer* renderer = 0;
 	SDL_Window*   window   = 0;
-	SDL_Point     mouse_position;
 
 	if (!init(&window, &renderer)) {
 		return 0;
 	}
 
-	std::vector<Cell> cells;
-	int y = 0, x = 0;
-	bool screenIsNotFilled = true;
-
 	update_cells();
 
 	while (!SHOULD_QUIT)
 	{
- 		SDL_GetMouseState(&mouse_position.x, &mouse_position.y);
-
 		handleEvents();
 
 		SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
 		SDL_RenderClear(renderer);
 
-		for (Cell cell : CELLS)
+		for (const Cell& cell : CELLS)
 		{
-			if (SDL_PointInRect(&mouse_position, &cell.rect)) {
+			if (SDL_PointInRect(&MOUSE_POS, &cell.rect)) {
 				SDL_SetRenderDrawColor(renderer, 38, 87, 82, 0xFF);
-			} else {
+			} 
+			else {
 				SDL_SetRenderDrawColor(renderer, 192, 192, 192, 0xFF);
+			}
+
+			if (cell.isSelected) {
+				SDL_SetRenderDrawColor(renderer, 203, 38, 6, 0xFF);
 			}
 
 			SDL_RenderDrawRect(renderer, &cell.rect);
