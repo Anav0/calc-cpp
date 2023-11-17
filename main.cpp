@@ -146,10 +146,12 @@ void render(SDL_Renderer* renderer) {
 
 	auto numberOfChanges = STATE.getNumberOfChanges();
 	if (numberOfChanges > 0) {
-		Gui::drawText(50, STATE.screenHeight - 50, STATE.fontColor, std::to_string(numberOfChanges) + " unsaved changes");
-		if (Gui::drawBtn(100, 100, STATE.fontColor, "CLICK")) {
+		Gui::startGroup(50, STATE.screenHeight - 50, false, 10);
+		Gui::drawText(STATE.fontColor, std::to_string(numberOfChanges) + " unsaved changes");
+		if (Gui::drawBtn(STATE.fontColor, "Save file")) {
 
 		}
+		Gui::endGroup();
 	}
 
 	SDL_RenderPresent(renderer);

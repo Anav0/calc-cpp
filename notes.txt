@@ -1,7 +1,7 @@
 15:03 - 15.03.2023
 	[x] - Dodać informację o ilości wprowadzonych zmian w programie
 	[x] - Ctrl-s powinien zapisywać zmiany (tymczasowo może czyścić kolejkę zmian)
-	[ ] - Immidiate mode graphics
+	[ ] - Immediate mode graphics
 	
 17:07 - 23.01.2023
 	[x] - Zaimplementować kolejkę zmian
