@@ -1,4 +1,5 @@
 #include "Mode.h"
+#include <string>
 
 #include "ProgramState.h"
 #include "Gui.h"
@@ -164,7 +165,7 @@ void EditMode::handleTextInput(SDL_Renderer* renderer, SDL_Event* e, ProgramStat
 
 	if (state->selectedCell->content.length() + SDL_strlen(e->text.text) < MAX_TEXT_LEN) {
 
-		state->selectedCell->content += *e->text.text;
+		state->selectedCell->content.insert(state->caret.pos, e->text.text);
 
 		state->moveCaret(state->caret.pos + 1);
 

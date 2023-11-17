@@ -191,6 +191,7 @@ bool ProgramState::evaluate(SDL_Renderer* renderer, Cell* cell) {
 
 void ProgramState::reset() {
 	selectedCell = &cells[0];
+	caret.pos = 0;
 	
 	while (!changes.queque.empty())
 		changes.queque.pop_back();

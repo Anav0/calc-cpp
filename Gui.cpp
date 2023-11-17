@@ -61,7 +61,7 @@ bool Gui::drawInput(int id, SDL_Color color, int height, std::string* content) {
 	auto isActive = Gui::activeElementId == id;
 
 	if (isActive && Gui::lastEvent->type == SDL_TEXTINPUT) {
-		*content += Gui::lastEvent->text.text;
+		content->insert(Gui::caretPos, Gui::lastEvent->text.text);
 		result = true;
 	}
 
