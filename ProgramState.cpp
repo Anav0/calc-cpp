@@ -9,34 +9,32 @@ Mode* ProgramState::getCurrentMode()
 			return mode;
 	}
 
-	return NULL;
+	assert(false);
 }
 
 void ProgramState::moveCaret(int pos)
 {
-	Cell* cell = selectedCell;
-
 	if (pos <= 0) {
-		SDL_Rect cellTextRect = cell->contentRect;
+		SDL_Rect cellTextRect = selectedCell->contentRect;
 		caret.rect.x = cellTextRect.x;
 		caret.rect.y = cellTextRect.y;
 		caret.pos = 0;
 		return;
 	}
 
-	if (pos > cell->content.length()) return;
+	if (pos > selectedCell->content.length()) return;
 
 	int charW, charH;
-	std::string cellText = cell->content;
+	std::string cellText = selectedCell->content;
 	const int caretCurrentPos = caret.pos;
 
 	int posToTake = pos;
 
 	if (pos > caret.pos) posToTake = caret.pos;
 
-	std::string character(1, cellText[posToTake]); //Note(Igor): this sucks
+	std::string character(1, cellText[posToTake]);
 
-	if (TTF_SizeText(FONT, character.c_str(), &charW, &charH)) {
+	if (TTF_SizeText(font, character.c_str(), &charW, &charH)) {
 		printf("Failed to determing size of individual char\n");
 		return;
 	}
@@ -65,26 +63,26 @@ Cell* ProgramState::getCellToThe(Cell* cell, Direction direction) {
 	int numberOfColumns = columns.size();
 	int numberOfRows = rows.size();
 
-	int newIndex = 0;
+	int cellIndex = 0;
 	switch (direction)
 	{
 		case Left:
-			newIndex = cell->index - 1;
+			cellIndex = cell->index - 1;
 			break;
 		case Right:
-			newIndex = cell->index + 1;
+			cellIndex = cell->index + 1;
 			break;
 		case Up:
-			newIndex = cell->index - numberOfColumns;
+			cellIndex = cell->index - numberOfColumns;
 			break;
 		case Down:
-			newIndex = cell->index + numberOfColumns;
+			cellIndex = cell->index + numberOfColumns;
 			break;
 	}
 
-	if (newIndex < 0 || newIndex >= cells.size()) return NULL;
+	if (cellIndex < 0 || cellIndex >= cells.size()) return NULL;
 
-	return &cells[newIndex];
+	return &cells[cellIndex];
 }
 
 std::string ProgramState::getCellPosLabel(Cell* cell){

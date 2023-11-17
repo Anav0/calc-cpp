@@ -47,6 +47,7 @@ public:
 	// Inherited via Mode
 	virtual void handleKeydownEvent(SDL_Renderer*, SDL_Event*, ProgramState*) override;
 	virtual void handleMouseButtonDown(SDL_Renderer*, SDL_Event*, ProgramState*) override;
+	virtual void handleTextInput(SDL_Renderer*, SDL_Event*, ProgramState*) override;
 };
 
 class ExprMode : public Mode {

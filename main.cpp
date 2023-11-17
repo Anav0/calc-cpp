@@ -51,9 +51,9 @@ bool init(SDL_Window** window, SDL_Renderer** renderer)
 	}
 
 	const char* font_path = "./assets/fonts/Poppins-Regular.ttf";
-	STATE.FONT = TTF_OpenFont(font_path, 14);
+	STATE.font = TTF_OpenFont(font_path, 14);
 
-	if (!STATE.FONT) {
+	if (!STATE.font) {
 		printf("Failed to load STATE.FONT: '%s' with msg: '%s'", font_path, TTF_GetError());
 	}
 
@@ -144,7 +144,7 @@ void update_rows(SDL_Renderer* renderer) {
 
 		std::string s = std::to_string(i);
 		row.content = s;
-		SDL_Surface* text = TTF_RenderText_Blended(STATE.FONT, s.c_str(), STATE.fontColor);
+		SDL_Surface* text = TTF_RenderText_Blended(STATE.font, s.c_str(), STATE.fontColor);
 
 		row.textRect = { rect.x + ((row.rect.w - text->w) / 2), rect.y + ((row.rect.h - text->h) / 2), text->w, text->h };
 		
@@ -176,7 +176,7 @@ void update_columns(SDL_Renderer* renderer) {
 
 		std::string s(1, char(65 + i));
 		col.content = s;
-		SDL_Surface* text = TTF_RenderText_Blended(STATE.FONT, s.c_str(), STATE.fontColor);
+		SDL_Surface* text = TTF_RenderText_Blended(STATE.font, s.c_str(), STATE.fontColor);
 
 		col.textRect = { rect.x + ((col.rect.w - text->w) / 2), rect.y + ((col.rect.h - text->h) / 2), text->w, text->h };
 		col.textTexture = SDL_CreateTextureFromSurface(renderer, text);
@@ -253,11 +253,11 @@ void handleEvents(SDL_Renderer* renderer) {
 
 int main(int argc, char* argv[])
 {
-	SDL_Renderer* renderer = 0;
-	SDL_Window* window = 0;
+	SDL_Renderer* renderer;
+	SDL_Window* window;
 
 	if (!init(&window, &renderer)) {
-		return 0;
+		return 1;
 	}
 
 	SDL_StartTextInput();
