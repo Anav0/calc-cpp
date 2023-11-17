@@ -3,8 +3,7 @@
 #include "ProgramState.h"
 #include "Gui.h"
 
-void Mode::handleEvents(SDL_Renderer* renderer, SDL_Event* e,
-	ProgramState* state) {
+void Mode::handleEvents(SDL_Renderer* renderer, SDL_Event* e, ProgramState* state) {
 	switch (e->type) {
 	case SDL_QUIT:
 		state->shouldQuit = true;
@@ -181,8 +180,10 @@ void EditMode::handleTextInput(SDL_Renderer* renderer, SDL_Event* e, ProgramStat
 // == VIEW MODE ==
 // ===============
 
-void ViewMode::handleKeydownEvent(SDL_Renderer* renderer, SDL_Event* e,
-	ProgramState* state) {
+void ViewMode::handleKeydownEvent(SDL_Renderer* renderer, SDL_Event* e, ProgramState* state) {
+	if(Gui::activeElementId > 0)
+		return;
+
 	switch (e->key.keysym.scancode) {
 	case SDL_SCANCODE_S:
 		if (e->key.keysym.mod & KMOD_LCTRL)
@@ -216,6 +217,7 @@ void ViewMode::handleKeydownEvent(SDL_Renderer* renderer, SDL_Event* e,
 }
 
 void ViewMode::handleTextInput(SDL_Renderer* renderer, SDL_Event* e, ProgramState* state) {
+	
 	if (Gui::activeElementId) return;
 
 	if (SDL_strlen(e->text.text) < MAX_TEXT_LEN) {
@@ -309,8 +311,7 @@ void ExprMode::navigate(SDL_Renderer* renderer, Direction dir,
 		renderer, state->font, state->fontColor, state->cellPadding);
 }
 
-void ExprMode::handleKeydownEvent(SDL_Renderer* renderer, SDL_Event* e,
-	ProgramState* state) {
+void ExprMode::handleKeydownEvent(SDL_Renderer* renderer, SDL_Event* e, ProgramState* state) {
 	switch (e->key.keysym.scancode) {
 	case SDL_SCANCODE_ESCAPE:
 	case SDL_SCANCODE_RETURN:

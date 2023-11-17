@@ -7,9 +7,11 @@ bool Gui::clicked;
 int Gui::activeElementId;
 UiGroup Gui::currentGroup;
 SDL_Event* Gui::lastEvent;
+int Gui::caretPos;
 
 void Gui::init(SDL_Renderer* renderer, TTF_Font* font)
 {
+	Gui::activeElementId = -1;
 	Gui::defaultFont = font;
 	Gui::renderer = renderer;
 }
@@ -69,23 +71,31 @@ bool Gui::drawInput(int id, SDL_Color color, int height, std::string* content) {
 	inputRect.x = x;
 	inputRect.y = y;
 
+	//TODO(Igor): Take padding from some settings
+	const int textPadding = 10;
+
 	if (height > 0)
 		inputRect.h = height;
 	else
-		inputRect.h = text->h + 10;
+		inputRect.h = text->h + textPadding;
 
 	if (!content->empty()) {
-		inputRect.w = text->w + 10;
-	
+		inputRect.w = text->w + textPadding;
+
 		contentRect.h = text->h;
 		contentRect.w = text->w;
 	}
 
 	centerY(&inputRect, &contentRect);
-	left2(&inputRect, &contentRect, 10);
+	left2(&inputRect, &contentRect, textPadding);
 
-	auto texture = SDL_CreateTextureFromSurface(Gui::renderer, text);
-	
+	if (isActive) {
+		SDL_SetRenderDrawColor(Gui::renderer, 255, 71, 61, 1); //Light red caret
+		if (Gui::caretPos < 0) Gui::caretPos = 0;
+		if (Gui::caretPos >= content->length()) Gui::caretPos = content->length();
+		drawCaret(2, &inputRect, content, Gui::caretPos, &color, textPadding);
+	}
+
 	if (!isActive && SDL_PointInRect(&Gui::mousePos, &inputRect))
 		SDL_SetRenderDrawColor(Gui::renderer, 79, 177, 206, 1); //Blue
 	else
@@ -93,11 +103,9 @@ bool Gui::drawInput(int id, SDL_Color color, int height, std::string* content) {
 
 	if (isActive) {
 		SDL_SetRenderDrawColor(Gui::renderer, 255, 71, 61, 1); //Light red
-
-		drawCursor(inputRect.x + 10, inputRect.y / 2, inputRect.h, 3, color);
 	}
 
-	//Render cursor
+	auto texture = SDL_CreateTextureFromSurface(Gui::renderer, text);
 	SDL_RenderDrawRect(renderer, &inputRect);
 	SDL_RenderCopy(Gui::renderer, texture, NULL, &contentRect);
 
@@ -110,13 +118,34 @@ bool Gui::drawInput(int id, SDL_Color color, int height, std::string* content) {
 	return result;
 }
 
-void Gui::drawCursor(int x, int y, int height, int thickness, SDL_Color color) {
+void Gui::drawCaret(int thickness, SDL_Rect* inputRect, std::string* content, int caretPos, SDL_Color* color, int padding) {
 	SDL_Rect caretRect{};
-	caretRect.x = x + 10; //Note(Igor) temporary
-	caretRect.y = y;
+	caretRect.w = thickness;
+	caretRect.h = inputRect->h - 15;
 
-	SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+	moveCaret(&caretRect, inputRect, caretPos, content, padding);
+
+	SDL_SetRenderDrawColor(renderer, color->r, color->g, color->b, color->a);
 	SDL_RenderFillRect(renderer, &caretRect);
+}
+
+void Gui::moveCaret(SDL_Rect* caret, SDL_Rect* parent, int pos, std::string* content, int padding) {
+	centerY(parent, caret);
+	caret->x = parent->x + padding;
+
+	if (pos <= 0 || pos > content->length())
+		return;
+
+	std::string contentToJumpOver = content->substr(0, pos);
+
+	int jumpOverW, jumpOverH;
+
+	if (TTF_SizeText(Gui::defaultFont, contentToJumpOver.c_str(), &jumpOverW, &jumpOverH)) {
+		printf("Failed to determing size of individual char\n");
+		return;
+	}
+
+	caret->x += jumpOverW;
 }
 
 bool Gui::drawBtn(SDL_Color color, std::string content)
@@ -167,9 +196,25 @@ void Gui::events(SDL_Event* e)
 		Gui::mousePos.y = e->motion.y;
 		break;
 
+	case SDL_KEYDOWN:
+		Gui::handleKeydownEvent(e);
+		break;
+
 	case SDL_MOUSEBUTTONDOWN:
 		Gui::activeElementId = -1;
+		Gui::caretPos = 0; //TODO(Igor): move caret to clicked character pos
 		Gui::clicked = true;
+		break;
+	}
+}
+
+void Gui::handleKeydownEvent(SDL_Event* e) {
+	switch (e->key.keysym.scancode) {
+	case SDL_SCANCODE_LEFT:
+		Gui::caretPos -= 1;
+		break;
+	case SDL_SCANCODE_RIGHT:
+		Gui::caretPos += 1;
 		break;
 	}
 }
