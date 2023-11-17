@@ -103,14 +103,13 @@ bool Gui::drawInput(int id, SDL_Color color, std::string* content, int padding[4
 	if (!isActive && SDL_PointInRect(&Gui::mousePos, &inputRect))
 		SDL_SetRenderDrawColor(Gui::renderer, 79, 177, 206, 1); //Blue
 	else
-		SDL_SetRenderDrawColor(Gui::renderer, 136, 136, 136, 1); //Grey
-
-	if (isActive) {
-		SDL_SetRenderDrawColor(Gui::renderer, 255, 71, 61, 1); //Light red
-	}
+		SDL_SetRenderDrawColor(Gui::renderer, 255, 255, 255, 1); //White
 
 	auto texture = SDL_CreateTextureFromSurface(Gui::renderer, text);
-	SDL_RenderDrawRect(renderer, &inputRect);
+	if (!isActive && SDL_PointInRect(&Gui::mousePos, &inputRect))
+		SDL_RenderFillRect(renderer, &inputRect);
+	else
+		SDL_RenderDrawRect(renderer, &inputRect);
 	SDL_RenderCopy(Gui::renderer, texture, NULL, &contentRect);
 
 	Gui::currentGroup.children.push_back(inputRect);

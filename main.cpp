@@ -83,7 +83,7 @@ void render(SDL_Renderer* renderer) {
 
 	SDL_Color modeColor = STATE.getCurrentMode()->color;
 
-	Gui::startGroup(0, 0, false, 10);
+	Gui::startGroup(0, 0, false, 0);
 
 	std::string selectedCellLabel = STATE.getCellPosLabel(STATE.selectedCell);
 	Gui::drawText(&STATE.fontColor, &selectedCellLabel, STATE.textPadding, 100, STATE.headerHeight);
@@ -94,7 +94,6 @@ void render(SDL_Renderer* renderer) {
 			STATE.selectedCell->showFormula(renderer, STATE.font, STATE.fontColor, STATE.cellPadding);
 		}
 	}
-
 	else {
 		if (Gui::drawInput(1, STATE.fontColor, &STATE.selectedCell->content, STATE.textPadding, formulaInputWidth, STATE.headerHeight)) {
 			STATE.selectedCell->updateContent(renderer, STATE.font, STATE.fontColor, STATE.cellPadding, &STATE.selectedCell->content);
