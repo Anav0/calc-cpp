@@ -88,10 +88,10 @@ public:
 	static void startGroup(int x, int y, bool isVertical, int gaps);
 	static void endGroup();
 
-	static void drawText(SDL_Color, std::string, TTF_Font*);
-	static void drawText(SDL_Color, std::string);
-	static bool drawBtn(SDL_Color, std::string);
-	static bool drawInput(int id, SDL_Color, int, std::string*);
+	static void drawText(SDL_Color*, std::string*, TTF_Font*, int padding[4], int width = -1, int height = -1);
+	static void drawText(SDL_Color*, std::string*, int padding[4], int width = -1, int height = -1);
+	static bool drawBtn(SDL_Color*, std::string*);
+	static bool drawInput(int id, SDL_Color, std::string*, int padding[4], int width = -1, int height = -1);
 
 	static void drawCaret(int thickness, SDL_Rect* inputRect, std::string* content, int caretPos, SDL_Color* color, int padding);
 	static void moveCaret(SDL_Rect* caret, SDL_Rect* parent, int pos, std::string* content, int padding);

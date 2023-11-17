@@ -49,7 +49,7 @@ void ProgramState::moveCaret(int pos)
 }
 
 void ProgramState::moveCaretToStartOfSelectedCell() {
-	left2(&selectedCell->rect, &caret.rect, cellPadding[0]);
+	left(&selectedCell->rect, &caret.rect, cellPadding[0]);
 	centerY(&selectedCell->rect, &caret.rect);
 
 	caret.pos = 0;

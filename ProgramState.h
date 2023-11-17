@@ -33,7 +33,8 @@ public:
 	bool shouldUpdate;
 
 	int cellPadding[4] = { 10, 10, 0, 0 }; // L R T B
-
+	int textPadding[4] = { 10, 10, 5, 5 };
+	int tmpHeaderGap = 1;
 	int headerHeight = 30;
 
 	SDL_Point mousePos;

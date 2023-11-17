@@ -16,31 +16,35 @@ void Gui::init(SDL_Renderer* renderer, TTF_Font* font)
 	Gui::renderer = renderer;
 }
 
-void Gui::drawText(SDL_Color color, std::string content)
+void Gui::drawText(SDL_Color* color, std::string* content, int padding[4], int width, int height)
 {
-	Gui::drawText(color, content, Gui::defaultFont);
+	Gui::drawText(color, content, Gui::defaultFont, padding, width, height);
 }
 
-void Gui::drawText(SDL_Color color, std::string content, TTF_Font* font)
+void Gui::drawText(SDL_Color* color, std::string* content, TTF_Font* font, int padding[4], int width, int height)
 {
 	int x, y;
 	Gui::currentGroup.getLastXandY(&x, &y);
 
-	SDL_Surface* text = TTF_RenderText_Blended(font, content.c_str(), color);
+	SDL_Surface* text = TTF_RenderText_Blended(font, content->c_str(), *color);
 
-	SDL_Rect containerRect{};
 	SDL_Rect contentRect{};
-
-	containerRect.x = x;
-	containerRect.y = y;
-	containerRect.h = text->h + 20;
-	containerRect.w = text->w + 20;
-
 	contentRect.h = text->h;
 	contentRect.w = text->w;
 
-	int padding[4] = { 10, 0, 10, 0 };
-	center(&containerRect, &contentRect);
+	SDL_Rect containerRect{};
+	containerRect.x = x;
+	containerRect.y = y;
+	containerRect.h = text->h;
+	containerRect.w = text->w;
+
+
+	if (width > 0)
+		containerRect.w = width;
+	if (height > 0)
+		containerRect.h = height;
+
+	center(&containerRect, &contentRect); //Note(Igor): Center for now, later use padding and style options
 
 	auto texture = SDL_CreateTextureFromSurface(Gui::renderer, text);
 
@@ -51,7 +55,7 @@ void Gui::drawText(SDL_Color color, std::string content, TTF_Font* font)
 	Gui::currentGroup.children.push_back(containerRect);
 }
 
-bool Gui::drawInput(int id, SDL_Color color, int height, std::string* content) {
+bool Gui::drawInput(int id, SDL_Color color, std::string* content, int padding[4], int width, int height) {
 
 	int x, y;
 	bool result = false;
@@ -71,29 +75,29 @@ bool Gui::drawInput(int id, SDL_Color color, int height, std::string* content) {
 	inputRect.x = x;
 	inputRect.y = y;
 
-	//TODO(Igor): Take padding from some settings
-	const int textPadding = 10;
-
 	if (height > 0)
 		inputRect.h = height;
-	else
-		inputRect.h = text->h + textPadding;
+	else if (text != NULL)
+		inputRect.h = text->h + padding[2];
 
-	if (!content->empty()) {
-		inputRect.w = text->w + textPadding;
+	if (width > 0)
+		inputRect.w = width;
+	else if (text != NULL)
+		inputRect.w = text->w + padding[0];
 
+	if (text != NULL && !content->empty()) {
 		contentRect.h = text->h;
 		contentRect.w = text->w;
 	}
 
 	centerY(&inputRect, &contentRect);
-	left2(&inputRect, &contentRect, textPadding);
+	left(&inputRect, &contentRect, padding[0]);
 
 	if (isActive) {
 		SDL_SetRenderDrawColor(Gui::renderer, 255, 71, 61, 1); //Light red caret
 		if (Gui::caretPos < 0) Gui::caretPos = 0;
 		if (Gui::caretPos >= content->length()) Gui::caretPos = content->length();
-		drawCaret(2, &inputRect, content, Gui::caretPos, &color, textPadding);
+		drawCaret(2, &inputRect, content, Gui::caretPos, &color, padding[0]);
 	}
 
 	if (!isActive && SDL_PointInRect(&Gui::mousePos, &inputRect))
@@ -148,12 +152,12 @@ void Gui::moveCaret(SDL_Rect* caret, SDL_Rect* parent, int pos, std::string* con
 	caret->x += jumpOverW;
 }
 
-bool Gui::drawBtn(SDL_Color color, std::string content)
+bool Gui::drawBtn(SDL_Color* color, std::string* content)
 {
 	int x, y;
 	Gui::currentGroup.getLastXandY(&x, &y);
 
-	SDL_Surface* text = TTF_RenderText_Blended(Gui::defaultFont, content.c_str(), color);
+	SDL_Surface* text = TTF_RenderText_Blended(Gui::defaultFont, content->c_str(), *color);
 
 	SDL_Rect btnRect{};
 	SDL_Rect contentRect{};

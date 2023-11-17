@@ -13,7 +13,7 @@ void Cell::updateContent(SDL_Renderer* renderer, TTF_Font* font, SDL_Color color
 	contentRect.h = text->h;
 	contentRect.w = text->w;
 
-	left(&rect, &contentRect, padding);
+	leftAndCenterY(&rect, &contentRect, padding);
 	contentTexture = SDL_CreateTextureFromSurface(renderer, text);
 }
 
