@@ -40,6 +40,8 @@ struct Cell {
 	SDL_Rect contentRect;
 	SDL_Texture* contentTexture;
 	char content[MAX_TEXT_LEN];
+
+	uint16_t index;
 };
 
 struct Column {

@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <vector>
+#include <cassert>
 
 #include <SDL.h>
 #include <SDL_image.h>
@@ -150,7 +151,7 @@ void update_rows(SDL_Renderer* renderer) {
 		row.textTexture = SDL_CreateTextureFromSurface(renderer, text);
 
 		y += STATE.rowHeight;
-		exceededScreenHeight = (rect.y + STATE.rowHeight) > STATE.screenHeight;
+		exceededScreenHeight = (rect.y + STATE.rowHeight) >= STATE.screenHeight;
 
 		STATE.rows.push_back(row);
 		i++;
@@ -181,7 +182,7 @@ void update_columns(SDL_Renderer* renderer) {
 		col.textTexture = SDL_CreateTextureFromSurface(renderer, text);
 
 		x += STATE.colWidth;
-		exceededScreenWidth = (rect.x + STATE.colWidth) > STATE.screenWidth;
+		exceededScreenWidth = (rect.x + STATE.colWidth) >= STATE.screenWidth;
 
 		STATE.columns.push_back(col);
 		i++;
@@ -191,38 +192,54 @@ void update_columns(SDL_Renderer* renderer) {
 
 void update_cells() {
 	int y = STATE.colHeight, x = STATE.rowWidth;
-	bool screenIsNotFilled = true;
+	bool screenIsFilled = false;
 	STATE.cells.clear();
 
-	while (screenIsNotFilled)
+	uint16_t i = 0;
+	int cellsInRow = 0;
+	int observedNumberOfRows = 0;
+	while (true)
 	{
 		SDL_Rect cellRect{};
-		cellRect.w = 100;
-		cellRect.h = 20;
-		cellRect.x = x;
-
-		if (cellRect.x > STATE.screenWidth) {
-			y += cellRect.h;
-			x = STATE.rowWidth;
-		}
-		else {
-			x += cellRect.w;
-		}
-		cellRect.y = y;
+		cellRect.w = STATE.colWidth;
+		cellRect.h = STATE.rowHeight;
 
 		Cell cell{};
+		
+		cell.index = i;
+
+		if (x >= STATE.screenWidth) {
+			y += STATE.rowHeight;
+			x = STATE.rowWidth;
+			assert(cellsInRow == STATE.columns.size());
+			cellsInRow = 0;
+			observedNumberOfRows += 1;
+		}
+
+		cellRect.y = y;
+		cellRect.x = x;
+
 		cell.rect = cellRect;
 
-		STATE.cells.push_back(cell);
+		screenIsFilled = y >= STATE.screenHeight;
+		if (screenIsFilled) break;
 
-		screenIsNotFilled = y < STATE.screenHeight;
+		STATE.cells.push_back(cell);
+		i++;
+		cellsInRow++;
+		x += STATE.colWidth;
 	}
+	int numberOfCols = STATE.columns.size();
+	int numberOfRows = STATE.rows.size();
+	int expectedNumberOfCells = numberOfCols * numberOfRows;
+	assert(observedNumberOfRows == numberOfRows);
+	assert(expectedNumberOfCells == STATE.cells.size());
 }
 
 void update(SDL_Renderer* renderer) {
-	update_cells();
 	update_rows(renderer);
 	update_columns(renderer);
+	update_cells();
 }
 
 void handleEvents(SDL_Renderer* renderer) {

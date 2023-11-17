@@ -120,6 +120,7 @@ void EditMode::handleTextInput(SDL_Renderer* renderer, SDL_Event* e, ProgramStat
 	}
 
 	if (state->selectedCell->content[0] == '=') {
+		state->subjectCell = state->selectedCell;
 		state->currentMode = Expr;
 	}
 }
@@ -188,11 +189,14 @@ void ExprMode::navigate(SDL_Renderer* renderer, Direction dir, ProgramState* sta
 {
 	Cell* cell = state->getCellToThe(state->selectedCell, dir);
 
-	state->selectedCell = cell;
-
 	if (cell != NULL) {
+		state->selectedCell = cell;
+
 		std::string label = state->getCellPosLabel(cell);
-		//state->subjectCell->content = label.c_str();
+
+		memset(state->subjectCell->content, 0, MAX_TEXT_LEN);
+		label.copy(state->subjectCell->content, MAX_TEXT_LEN);
+		updateCellContentTexture(renderer, state->FONT, state->fontColor, state->subjectCell);
 	}
 	
 }
@@ -228,5 +232,9 @@ void ExprMode::handleMouseButtonDown(SDL_Renderer* renderer, SDL_Event* e, Progr
 	case SDL_BUTTON_MIDDLE:
 		break;
 	}
+
+}
+
+void ExprMode::handleTextInput(SDL_Renderer* renderer, SDL_Event* e, ProgramState* state) {
 
 }
