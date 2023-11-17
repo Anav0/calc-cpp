@@ -80,16 +80,14 @@ void render(SDL_Renderer* renderer) {
 	{
 		SDL_SetRenderDrawColor(renderer, 192, 192, 192, 0xFF);
 
-		if (SDL_PointInRect(&STATE.mousePos, &cell.rect)) {
-			SDL_SetRenderDrawColor(renderer, 38, 87, 82, 0xFF);
-		}
+		if (SDL_PointInRect(&STATE.mousePos, &cell.rect))
+			SDL_SetRenderDrawColor(renderer, STATE.hoverColor.r, STATE.hoverColor.g, STATE.hoverColor.b, STATE.hoverColor.a);
+		
+		if(STATE.subjectCell == &cell)
+			SDL_SetRenderDrawColor(renderer, STATE.subjectColor.r, STATE.subjectColor.g, STATE.subjectColor.b, STATE.subjectColor.a);
 
-		if (STATE.selectedCell == &cell) {
-			if (STATE.currentMode == Edit)
-				SDL_SetRenderDrawColor(renderer, 255, 188, 71, 0xFF);
-			else
-				SDL_SetRenderDrawColor(renderer, 38, 87, 82, 0xFF);
-		}
+		if (STATE.selectedCell == &cell)
+			SDL_SetRenderDrawColor(renderer, STATE.selectedColor.r, STATE.selectedColor.g, STATE.selectedColor.b, STATE.selectedColor.a);
 
 		SDL_RenderDrawRect(renderer, &cell.rect);
 
@@ -144,6 +142,7 @@ void update_rows(SDL_Renderer* renderer) {
 		row.rect = rect;
 
 		std::string s = std::to_string(i);
+		row.content = s;
 		SDL_Surface* text = TTF_RenderText_Blended(STATE.FONT, s.c_str(), STATE.fontColor);
 
 		row.textRect = { rect.x + ((row.rect.w - text->w) / 2), rect.y + ((row.rect.h - text->h) / 2), text->w, text->h };
@@ -175,6 +174,7 @@ void update_columns(SDL_Renderer* renderer) {
 		col.rect = rect;
 
 		std::string s(1, char(65 + i));
+		col.content = s;
 		SDL_Surface* text = TTF_RenderText_Blended(STATE.FONT, s.c_str(), STATE.fontColor);
 
 		col.textRect = { rect.x + ((col.rect.w - text->w) / 2), rect.y + ((col.rect.h - text->h) / 2), text->w, text->h };

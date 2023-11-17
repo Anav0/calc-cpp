@@ -1,4 +1,5 @@
 #pragma once
+#include <string>
 
 #include <SDL_rect.h>
 #include <SDL.h>
@@ -46,6 +47,8 @@ struct Column {
 
 	SDL_Rect textRect;
 	SDL_Texture* textTexture;
+
+	std::string content;
 };
 
 struct Row {
@@ -53,6 +56,8 @@ struct Row {
 
 	SDL_Rect textRect;
 	SDL_Texture* textTexture;
+
+	std::string content;
 };
 
 inline void updateCellContentTexture(SDL_Renderer* renderer, TTF_Font* font, SDL_Color color, Cell* cell) {
