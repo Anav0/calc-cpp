@@ -41,7 +41,6 @@ struct Row {
 };
 
 inline void updateCellContentTexture(SDL_Renderer* renderer, TTF_Font* font, SDL_Color color, Cell* cell) {
-
 	SDL_Surface* text = TTF_RenderText_Blended(font, cell->content, color);
 
 	if (text == NULL) {

@@ -4,7 +4,7 @@ Mode* ProgramState::getCurrentMode()
 {
 	for (Mode* mode : _modes) 
 	{
-		if (mode->type == CURRENT_MODE)
+		if (mode->type == currentMode)
 			return mode;
 	}
 
