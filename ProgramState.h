@@ -2,9 +2,13 @@
 
 #include <vector>
 #include <cassert>
+#include <regex>
 
 #include <SDL.h>
 #include <SDL_ttf.h>
+
+#include "Base.h"
+#include "tinyexpr.h"
 
 #include "Mode.h"
 
@@ -28,8 +32,6 @@ public:
 	bool shouldUpdate;
 
 	int cellPadding[4] = {10, 10, 0, 0}; // L R T B
-
-	
 
 	SDL_Point mousePos;
 
@@ -77,4 +79,6 @@ public:
 
 	std::string getCellPosLabel(Cell*);
 	Cell* getCellToThe(Cell*, Direction);
+
+	bool evaluate(SDL_Renderer*, Cell*);
 };

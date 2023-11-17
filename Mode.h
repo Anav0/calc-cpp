@@ -4,7 +4,6 @@
 #include <SDL.h>
 
 #include "Base.h"
-#include "Eval.h"
 
 struct ProgramState;
 
