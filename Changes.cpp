@@ -13,9 +13,8 @@ void CellChange::applyRevert(std::vector<Cell>& cells)
 }
 
 void Changes::undo(std::vector<Cell>& cells) {
-
 	if (queque.empty()) return;
-
+	
 	Change* change = queque.front();
 
 	change->applyRevert(cells);

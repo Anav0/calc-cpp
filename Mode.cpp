@@ -31,14 +31,12 @@ void Mode::handleEvents(SDL_Renderer* renderer, SDL_Event* e,
 	}
 }
 
-void Mode::handleMouseMotion(SDL_Renderer* renderer, SDL_Event* e,
-	ProgramState* state) {
+void Mode::handleMouseMotion(SDL_Renderer* renderer, SDL_Event* e, ProgramState* state) {
 	state->mousePos.x = e->motion.x;
 	state->mousePos.y = e->motion.y;
 }
 
-void Mode::handleWindowEvent(SDL_Renderer* renderer, SDL_Event* e,
-	ProgramState* state) {
+void Mode::handleWindowEvent(SDL_Renderer* renderer, SDL_Event* e, ProgramState* state) {
 	switch (e->window.event) {
 	case SDL_WINDOWEVENT_RESIZED:
 		SDL_Log("Window %d resized to %dx%d", e->window.windowID, e->window.data1,
@@ -186,9 +184,9 @@ void EditMode::handleTextInput(SDL_Renderer* renderer, SDL_Event* e,
 void ViewMode::handleKeydownEvent(SDL_Renderer* renderer, SDL_Event* e,
 	ProgramState* state) {
 	switch (e->key.keysym.scancode) {
-		case SDL_SCANCODE_Z:
-			if (e->key.keysym.mod & KMOD_LCTRL)
-				state->changes.undo(state->cells);
+	case SDL_SCANCODE_Z:
+		if (e->key.keysym.mod & KMOD_LCTRL)
+			state->changes.undo(state->cells);
 		break;
 	case SDL_SCANCODE_RETURN:
 		state->switchMode(renderer, Edit);
