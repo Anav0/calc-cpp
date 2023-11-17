@@ -9,6 +9,7 @@
 enum ModeType {
 	View,
 	Edit,
+	Expr
 };
 
 enum Direction {
